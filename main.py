@@ -19,7 +19,7 @@ async def main():
     dp = Dispatcher()
     dp.include_router(user_router)
 
-    # Создаём таблицы
+    # Создаём таблицы при запуске
     from bot.database.base import engine
     from bot.database.models import Base
     async with engine.begin() as conn:
