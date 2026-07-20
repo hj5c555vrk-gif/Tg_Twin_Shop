@@ -28,7 +28,7 @@ async def main():
         await seed_categories(session)
 
 print("Бот запущен с базой данных!")
-await dp.start_polling(bot)
+    await dp.start_polling(bot)
 
 if __name__ == "__main__":
     asyncio.run(main())
