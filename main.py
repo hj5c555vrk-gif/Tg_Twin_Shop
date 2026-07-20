@@ -20,7 +20,7 @@ async def main():
     dp.include_router(user_router)
 
     # Создаём таблицы при запуске
-    from bot.database.base import engine
+    from bot.database.base import engine, async_session
     from bot.database.models import Base
     async with engine.begin() as conn:
     await conn.run_sync(Base.metadata.create_all)
