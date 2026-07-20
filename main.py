@@ -22,11 +22,10 @@ async def main():
     # Создаём таблицы при запуске
     from bot.database.base import engine, async_session
     from bot.database.models import Base
-async with engine.begin() as conn:
-    await conn.run_sync(Base.metadata.create_all)
-
-async with async_session() as session:
-    await seed_categories(session)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    async with async_session() as session:
+        await seed_categories(session)
 
 print("Бот запущен с базой данных!")
 await dp.start_polling(bot)
