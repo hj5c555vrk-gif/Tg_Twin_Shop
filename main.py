@@ -22,7 +22,7 @@ async def main():
     # Создаём таблицы при запуске
     from bot.database.base import engine, async_session
     from bot.database.models import Base
-    async with engine.begin() as conn:
+async with engine.begin() as conn:
     await conn.run_sync(Base.metadata.create_all)
 
 async with async_session() as session:
