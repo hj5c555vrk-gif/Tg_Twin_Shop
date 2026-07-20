@@ -17,7 +17,8 @@ async def cmd_start(message: Message):
     )
 @user_router.message(Command("catalog"))
 async def show_catalog(message: Message):
-    async with async_session() as session:
+    categories = await get_categories(session)
+        print("КАТЕГОРИИ ИЗ БАЗЫ:", categories)
         categories = await get_categories(session)
         if categories:
             text = "<b>Категории товаров:</b>\n\n"
