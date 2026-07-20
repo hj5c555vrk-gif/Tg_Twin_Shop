@@ -15,7 +15,6 @@ async def cmd_start(message: Message):
         "/catalog — посмотреть категории\n"
         "/start — перезапустить"
     )
-
 @user_router.message(Command("catalog"))
 async def show_catalog(message: Message):
     async with async_session() as session:
