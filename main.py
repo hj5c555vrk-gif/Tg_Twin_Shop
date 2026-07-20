@@ -23,10 +23,13 @@ async def main():
     from bot.database.base import engine
     from bot.database.models import Base
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    await conn.run_sync(Base.metadata.create_all)
 
-    print("Бот запущен с базой данных!")
-    await dp.start_polling(bot)
+async with async_session() as session:
+    await seed_categories(session)
+
+print("Бот запущен с базой данных!")
+await dp.start_polling(bot)
 
 if __name__ == "__main__":
     asyncio.run(main())
