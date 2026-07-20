@@ -1,27 +1,31 @@
 import asyncio
 import logging
-import os
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from dotenv import load_dotenv
+import os
 
-# Загружаем .env
 load_dotenv()
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
+
+from bot.handlers.user import user_router
 
 logging.basicConfig(level=logging.INFO)
 
 async def main():
     bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     dp = Dispatcher()
+    dp.include_router(user_router)
 
-    @dp.message()
-    async def echo(message):
-        await message.answer(f"Привет! Я работаю. Твой ID: {message.from_user.id}")
+    # Создаём таблицы
+    from bot.database.base import engine
+    from bot.database.models import Base
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 
-    print("Бот запущен...")
+    print("Бот запущен с базой данных!")
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
