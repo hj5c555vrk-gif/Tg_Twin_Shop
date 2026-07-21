@@ -58,3 +58,19 @@ async def open_category(callback: CallbackQuery):
     )
 
     await callback.answer()
+    @catalog_router.callback_query(
+    F.data == "back_catalog"
+)
+async def back_to_catalog(callback: CallbackQuery):
+
+    async with async_session() as session:
+        categories = await get_categories(session)
+
+    await callback.message.edit_text(
+        "<b>📦 Каталог товаров</b>\n\n"
+        "Выберите категорию:",
+        reply_markup=catalog_keyboard(categories),
+        parse_mode="HTML"
+    )
+
+    await callback.answer()
