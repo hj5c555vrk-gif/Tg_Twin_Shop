@@ -29,5 +29,9 @@ async def admin_test(message: Message):
 
 
     await message.answer(
-        "🔐 Доступ разрешён"
+    "<b>🔐 Панель администратора</b>\n\n"
+    "Добро пожаловать.\n"
+    "Выберите необходимый раздел.",
+    reply_markup=admin_keyboard,
+    parse_mode="HTML"
     )
