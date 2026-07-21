@@ -7,7 +7,7 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from dotenv import load_dotenv
 
-from bot.handlers.user import user_router
+from bot.handlers import routers
 from bot.database.seed_categories import seed_categories
 
 
@@ -21,20 +21,25 @@ logging.basicConfig(level=logging.INFO)
 async def main():
     bot = Bot(
         token=BOT_TOKEN,
-        default=DefaultBotProperties(parse_mode=ParseMode.HTML)
+        default=DefaultBotProperties(
+            parse_mode=ParseMode.HTML
+        )
     )
 
     dp = Dispatcher()
-    dp.include_router(user_router)
 
-    # Создаём таблицы при запуске
+    # Подключение всех обработчиков
+    for router in routers:
+        dp.include_router(router)
+
+    # Создание таблиц базы данных
     from bot.database.base import engine, async_session
     from bot.database.models import Base
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-    # Добавляем категории
+    # Добавление стартовых категорий
     async with async_session() as session:
         await seed_categories(session)
 
