@@ -22,8 +22,6 @@ from bot.keyboards.admin_key import (
 
 from bot.database.base import async_session
 
-from bot.database.models import Category
-
 from bot.services.analytics import get_analytics
 
 from bot.services.products import create_product
