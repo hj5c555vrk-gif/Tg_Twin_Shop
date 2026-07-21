@@ -1,5 +1,5 @@
 from aiogram import Router, F
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import CallbackQuery, Message
 from aiogram.filters import Command
 
 from bot.database.base import async_session
@@ -34,10 +34,14 @@ async def show_catalog(message: Message):
     )
 
 
-@catalog_router.callback_query(F.data.startswith("category_"))
+@catalog_router.callback_query(
+    F.data.startswith("category_")
+)
 async def open_category(callback: CallbackQuery):
 
-    category_id = int(callback.data.split("_")[1])
+    category_id = int(
+        callback.data.split("_")[1]
+    )
 
     async with async_session() as session:
         products = await get_products_by_category(
@@ -58,10 +62,11 @@ async def open_category(callback: CallbackQuery):
     )
 
     await callback.answer()
-    @catalog_router.callback_query(
-    F.data == "back_catalog"
-    )
 
+
+@catalog_router.callback_query(
+    F.data == "back_catalog"
+)
 async def back_to_catalog(callback: CallbackQuery):
 
     async with async_session() as session:
