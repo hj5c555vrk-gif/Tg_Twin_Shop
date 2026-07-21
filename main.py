@@ -12,14 +12,6 @@ from bot.database.seed_categories import seed_categories
 from bot.database.seed_products import seed_products
 import bot.handlers
 
-print(
-    "HANDLERS PATH:",
-    bot.handlers.__file__
-    )
-print(
-    "ROUTERS CONTENT:",
-    routers
-)
 
 load_dotenv()
 
@@ -41,7 +33,7 @@ async def main():
 
     # Подключение всех обработчиков
     for router in routers:
-        dp.include_router(router)
+        dp.include_router(router) print("CONNECTED ROUTERS:", routers)
 
 
     # Создание таблиц базы данных
