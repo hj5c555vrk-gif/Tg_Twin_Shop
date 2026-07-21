@@ -1,5 +1,7 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, Text, Boolean
 from sqlalchemy.orm import relationship
+from datetime import datetime
+from sqlalchemy import DateTime
 
 from bot.database.base import Base
 
@@ -124,6 +126,11 @@ class User(Base):
         nullable=True
     )
     
+    created_at = Column(
+        DateTime,
+        default=datetime.utcnow
+    )
+    
     is_admin = Column(
     Boolean,
     default=False
@@ -179,3 +186,5 @@ class CartItem(Base):
     product = relationship(
         "Product"
     )
+    
+    from datetime import datetime
