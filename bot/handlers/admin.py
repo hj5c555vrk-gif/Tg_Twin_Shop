@@ -1,3 +1,4 @@
+print("ADMIN HANDLER LOADED")
 from aiogram import Router
 from aiogram.types import Message
 from aiogram.filters import Command
@@ -11,8 +12,7 @@ admin_router = Router()
 
 @admin_router.message(Command("admin"))
 async def admin_panel(message: Message):
-    print("ADMIN HANDLER LOADED")
-
+    
     async with async_session() as session:
     
     message.from_user.id
