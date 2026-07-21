@@ -43,6 +43,11 @@ class Product(Base):
         Text
     )
 
+    stock = Column(
+        Integer, 
+        default=0
+    )
+    
     price = Column(
         Float,
         nullable=False
