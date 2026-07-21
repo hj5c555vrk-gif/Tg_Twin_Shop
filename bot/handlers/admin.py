@@ -35,3 +35,16 @@ async def admin_test(message: Message):
     reply_markup=admin_keyboard,
     parse_mode="HTML"
     )
+    
+from aiogram.types import CallbackQuery
+from aiogram import F
+
+
+@admin_router.callback_query(F.data.startswith("admin_"))
+async def admin_callbacks(callback: CallbackQuery):
+
+    await callback.answer()
+
+    await callback.message.edit_text(
+        "🚧 Этот раздел находится в разработке."
+    )
