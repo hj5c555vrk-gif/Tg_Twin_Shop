@@ -7,7 +7,7 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from dotenv import load_dotenv
 
-from bot.handlers import routers
+from bot.handlers.__init_ import routers
 from bot.database.seed_categories import seed_categories
 
 
