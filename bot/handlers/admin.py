@@ -11,10 +11,10 @@ admin_router = Router()
 
 @admin_router.message(Command("admin"))
 async def admin_panel(message: Message):
+    print("ADMIN HANDLER LOADED")
 
     async with async_session() as session:
-    print(
-    "ADMIN CHECK:",
+    
     message.from_user.id
 )
         check = await is_admin(
