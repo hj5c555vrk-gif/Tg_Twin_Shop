@@ -6,6 +6,7 @@ from bot.database.base import async_session
 from bot.services.catalog import get_categories
 from bot.keyboards.catalog_key import catalog_keyboard
 from bot.services.user import get_or_create_user
+from bot.database.models import User
 
 user_router = Router()
 
@@ -13,16 +14,31 @@ user_router = Router()
 async def cmd_start(message: Message):
 
     async with async_session() as session:
-        await get_or_create_user(
-            session,
-            telegram_id=message.from_user.id,
-            username=message.from_user.username,
-            first_name=message.from_user.first_name
-            ) 
 
-        await message.answer(
-            "Сап 🖐️, это Twinstore!\n\n"
-            "🗺️Команды Навигации \n\n"
-            "/catalog — посмотреть категории\n"
-            "/start — перезапустить"
+        result = await session.execute(
+            select(User)
+            .where(
+                User.telegram_id ==
+                message.from_user.id
+            )
+        )
+
+        user = result.scalar()
+
+
+        if not user:
+
+            new_user = User(
+                telegram_id=message.from_user.id,
+                username=message.from_user.username,
+                first_name=message.from_user.first_name
+            )
+
+            session.add(new_user)
+
+            await session.commit()
+
+
+    await message.answer(
+        "Добро пожаловать в магазин!"
     )
