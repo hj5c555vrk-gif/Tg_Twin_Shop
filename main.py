@@ -16,7 +16,10 @@ print(
     "HANDLERS PATH:",
     bot.handlers.__file__
     )
-
+print(
+    "ROUTERS CONTENT:",
+    routers
+)
 
 load_dotenv()
 
