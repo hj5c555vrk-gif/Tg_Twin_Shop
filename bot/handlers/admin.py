@@ -13,11 +13,14 @@ admin_router = Router()
 async def admin_panel(message: Message):
 
     async with async_session() as session:
-
+    print(
+    "ADMIN CHECK:",
+    message.from_user.id
+)
         check = await is_admin(
             session,
             message.from_user.id
-        )
+         
 
     if not check:
         await message.answer(
