@@ -1,6 +1,7 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 
+# Главное меню администратора
 admin_keyboard = InlineKeyboardMarkup(
     inline_keyboard=[
         [
@@ -11,7 +12,7 @@ admin_keyboard = InlineKeyboardMarkup(
             InlineKeyboardButton(
                 text="📂 Категории",
                 callback_data="admin_categories"
-            )
+            ),
         ],
         [
             InlineKeyboardButton(
@@ -21,12 +22,29 @@ admin_keyboard = InlineKeyboardMarkup(
             InlineKeyboardButton(
                 text="📊 Статистика",
                 callback_data="admin_stats"
-            )
+            ),
         ],
         [
             InlineKeyboardButton(
-                text="⚙ Настройки",
+                text="🛒 Заказы",
+                callback_data="admin_orders"
+            ),
+            InlineKeyboardButton(
+                text="⚙️ Настройки",
                 callback_data="admin_settings"
+            ),
+        ],
+    ]
+)
+
+
+# Универсальная кнопка возврата
+back_to_admin_keyboard = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [
+            InlineKeyboardButton(
+                text="◀️ Назад",
+                callback_data="admin_menu"
             )
         ]
     ]
