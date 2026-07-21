@@ -32,6 +32,7 @@ async def main():
     # Подключение всех обработчиков
     for router in routers:
         dp.include_router(router)
+        await dp.start_polling(bot)
 
     # Создание таблиц базы данных
     from bot.database.base import engine, async_session
