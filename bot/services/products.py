@@ -1,12 +1,11 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from bot.database.models import Product
+from bot.database.models import (
+    Product,
+    Category,
+)
 
-
-# ==================================================
-# ПОЛУЧЕНИЕ ТОВАРОВ ПО КАТЕГОРИИ
-# ==================================================
 
 async def get_products_by_category(
     session: AsyncSession,
@@ -14,17 +13,18 @@ async def get_products_by_category(
 ):
 
     result = await session.execute(
-        select(Product).where(
+        select(Product)
+        .where(
             Product.category_id == category_id
+        )
+        .order_by(
+            Product.id
         )
     )
 
     return result.scalars().all()
 
 
-# ==================================================
-# СОЗДАНИЕ ТОВАРА
-# ==================================================
 
 async def create_product(
     session: AsyncSession,
@@ -34,6 +34,20 @@ async def create_product(
     price: float,
     stock: int
 ):
+
+    category_result = await session.execute(
+        select(Category)
+        .where(
+            Category.id == category_id
+        )
+    )
+
+    category = category_result.scalar_one_or_none()
+
+
+    if category is None:
+        return None
+
 
     product = Product(
 
@@ -47,22 +61,29 @@ async def create_product(
 
         stock=stock,
 
-        available=True
+        available=stock > 0
 
     )
 
-    session.add(product)
 
-    await session.commit()
+    try:
 
-    await session.refresh(product)
+        session.add(product)
 
-    return product
+        await session.commit()
+
+        await session.refresh(product)
+
+        return product
 
 
-# ==================================================
-# ВСЕ ТОВАРЫ
-# ==================================================
+    except Exception:
+
+        await session.rollback()
+
+        raise
+
+
 
 async def get_all_products(
     session: AsyncSession
@@ -70,16 +91,16 @@ async def get_all_products(
 
     result = await session.execute(
 
-        select(Product).order_by(Product.id)
+        select(Product)
+        .order_by(
+            Product.id
+        )
 
     )
 
     return result.scalars().all()
 
 
-# ==================================================
-# ТОВАР ПО ID
-# ==================================================
 
 async def get_product_by_id(
     session: AsyncSession,
@@ -88,18 +109,17 @@ async def get_product_by_id(
 
     result = await session.execute(
 
-        select(Product).where(
+        select(Product)
+        .where(
             Product.id == product_id
         )
 
     )
 
+
     return result.scalar_one_or_none()
 
 
-# ==================================================
-# ИЗМЕНЕНИЕ НАЗВАНИЯ
-# ==================================================
 
 async def update_product_name(
     session: AsyncSession,
@@ -112,21 +132,30 @@ async def update_product_name(
         product_id
     )
 
+
     if product is None:
         return None
 
+
     product.name = name
 
-    await session.commit()
 
-    await session.refresh(product)
+    try:
 
-    return product
+        await session.commit()
+
+        await session.refresh(product)
+
+        return product
 
 
-# ==================================================
-# ИЗМЕНЕНИЕ ОПИСАНИЯ
-# ==================================================
+    except Exception:
+
+        await session.rollback()
+
+        raise
+
+
 
 async def update_product_description(
     session: AsyncSession,
@@ -139,21 +168,30 @@ async def update_product_description(
         product_id
     )
 
+
     if product is None:
         return None
 
+
     product.description = description
 
-    await session.commit()
 
-    await session.refresh(product)
+    try:
 
-    return product
+        await session.commit()
+
+        await session.refresh(product)
+
+        return product
 
 
-# ==================================================
-# ИЗМЕНЕНИЕ ЦЕНЫ
-# ==================================================
+    except Exception:
+
+        await session.rollback()
+
+        raise
+
+
 
 async def update_product_price(
     session: AsyncSession,
@@ -166,21 +204,30 @@ async def update_product_price(
         product_id
     )
 
+
     if product is None:
         return None
 
+
     product.price = price
 
-    await session.commit()
 
-    await session.refresh(product)
+    try:
 
-    return product
+        await session.commit()
+
+        await session.refresh(product)
+
+        return product
 
 
-# ==================================================
-# ИЗМЕНЕНИЕ ОСТАТКА
-# ==================================================
+    except Exception:
+
+        await session.rollback()
+
+        raise
+
+
 
 async def update_stock(
     session: AsyncSession,
@@ -193,27 +240,39 @@ async def update_stock(
         product_id
     )
 
+
     if product is None:
         return None
+
 
     product.stock = stock
 
     product.available = stock > 0
 
-    await session.commit()
 
-    await session.refresh(product)
+    try:
 
-    return product
+        await session.commit()
+
+        await session.refresh(product)
+
+        return product
 
 
-# Совместимость со старым названием функции
+    except Exception:
+
+        await session.rollback()
+
+        raise
+
+
 
 async def update_product_stock(
     session: AsyncSession,
     product_id: int,
     stock: int
 ):
+
     return await update_stock(
         session,
         product_id,
@@ -221,9 +280,6 @@ async def update_product_stock(
     )
 
 
-# ==================================================
-# УДАЛЕНИЕ ТОВАРА
-# ==================================================
 
 async def delete_product(
     session: AsyncSession,
@@ -235,19 +291,27 @@ async def delete_product(
         product_id
     )
 
+
     if product is None:
         return False
 
-    await session.delete(product)
 
-    await session.commit()
+    try:
 
-    return True
+        await session.delete(product)
+
+        await session.commit()
+
+        return True
 
 
-# ==================================================
-# ПЕРЕКЛЮЧЕНИЕ ДОСТУПНОСТИ
-# ==================================================
+    except Exception:
+
+        await session.rollback()
+
+        raise
+
+
 
 async def set_product_available(
     session: AsyncSession,
@@ -260,21 +324,30 @@ async def set_product_available(
         product_id
     )
 
+
     if product is None:
         return None
 
+
     product.available = available
 
-    await session.commit()
 
-    await session.refresh(product)
+    try:
 
-    return product
+        await session.commit()
+
+        await session.refresh(product)
+
+        return product
 
 
-# ==================================================
-# ПОИСК ПО НАЗВАНИЮ
-# ==================================================
+    except Exception:
+
+        await session.rollback()
+
+        raise
+
+
 
 async def search_products(
     session: AsyncSession,
@@ -283,8 +356,11 @@ async def search_products(
 
     result = await session.execute(
 
-        select(Product).where(
-            Product.name.ilike(f"%{text}%")
+        select(Product)
+        .where(
+            Product.name.ilike(
+                f"%{text}%"
+            )
         )
 
     )
