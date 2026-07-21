@@ -29,6 +29,8 @@ async def main():
     )
 
     dp = Dispatcher()
+    
+    print("ROUTERS:", routers)
 
 
     # Подключение всех обработчиков
