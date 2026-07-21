@@ -2,7 +2,11 @@ from datetime import datetime, timedelta
 
 from sqlalchemy import select, func
 
-from bot.database.models import User, Category
+from bot.database.models import (
+    User,
+    Category,
+    CategoryView
+)
 
 
 async def get_users_count(session):
