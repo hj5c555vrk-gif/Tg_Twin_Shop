@@ -6,7 +6,7 @@ from bot.database.base import async_session
 
 from bot.services.catalog import get_categories
 from bot.services.product import get_products_by_category
-
+from bot.services.category_views import increase_category_view
 from bot.keyboards.catalog_key import catalog_keyboard
 from bot.keyboards.product_key import products_keyboard
 
