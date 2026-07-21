@@ -3,7 +3,7 @@ from aiogram.types import Message
 from aiogram.filters import Command
 from sqlalchemy.ext.asyncio import AsyncSession
 from bot.database.base import async_session
-from bot.services.catalog import get_categories
+from bot.keyboards.catalog_key import catalog_keyboard
 
 user_router = Router()
 
