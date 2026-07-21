@@ -4,9 +4,11 @@ from aiogram.filters import Command
 
 
 from bot.database.admin import ADMIN_ID
+
 from bot.keyboards.admin_key import (
     admin_keyboard,
     back_to_admin_keyboard,
+    products_keyboard,
 )
 
 from bot.database.base import async_session
@@ -18,6 +20,8 @@ admin_router = Router()
 
 print("ADMIN ROUTER LOADED")
 
+
+# ===== ГЛАВНАЯ АДМИН ПАНЕЛЬ =====
 
 @admin_router.message(Command("admin"))
 async def admin_panel(message: Message):
@@ -42,6 +46,7 @@ async def admin_panel(message: Message):
         reply_markup=admin_keyboard,
         parse_mode="HTML",
     )
+
 
 
 # ===== АНАЛИТИКА =====
@@ -84,22 +89,149 @@ async def admin_analytics(callback: CallbackQuery):
         parse_mode="HTML",
     )
 
+
+
+# ===== ТОВАРЫ =====
+
 @admin_router.callback_query(
     F.data == "products"
 )
-async def admin_products(
-    callback: CallbackQuery
-):
+async def admin_products(callback: CallbackQuery):
+
+    if callback.from_user.id != ADMIN_ID:
+        await callback.answer(
+            "Нет доступа.",
+            show_alert=True
+        )
+        return
+
+
+    await callback.answer()
+
 
     await callback.message.edit_text(
-        "📦 товары ",
-        reply_markup=products_keyboard
+        "<b>📦 Управление товарами</b>\n\n"
+        "Выберите действие:",
+        reply_markup=products_keyboard,
+        parse_mode="HTML",
     )
+
+
+
+# ===== ДОБАВЛЕНИЕ ТОВАРА =====
+
+@admin_router.callback_query(
+    F.data == "add_product"
+)
+async def add_product(callback: CallbackQuery):
+
+    if callback.from_user.id != ADMIN_ID:
+        await callback.answer(
+            "Нет доступа.",
+            show_alert=True
+        )
+        return
+
+
+    await callback.answer()
+
+
+    await callback.message.edit_text(
+        "<b>➕ Добавление товара</b>\n\n"
+        "Введите название товара.",
+        reply_markup=back_to_admin_keyboard,
+        parse_mode="HTML",
+    )
+
+
+
+# ===== СПИСОК ТОВАРОВ =====
+
+@admin_router.callback_query(
+    F.data == "products_list"
+)
+async def products_list(callback: CallbackQuery):
+
+    if callback.from_user.id != ADMIN_ID:
+        await callback.answer(
+            "Нет доступа.",
+            show_alert=True
+        )
+        return
+
+
+    await callback.answer()
+
+
+    await callback.message.edit_text(
+        "<b>📋 Список товаров</b>\n\n"
+        "Пока товаров нет.",
+        reply_markup=back_to_admin_keyboard,
+        parse_mode="HTML",
+    )
+
+
+
+# ===== ОСТАТКИ =====
+
+@admin_router.callback_query(
+    F.data == "stock_manage"
+)
+async def stock_manage(callback: CallbackQuery):
+
+    if callback.from_user.id != ADMIN_ID:
+        await callback.answer(
+            "Нет доступа.",
+            show_alert=True
+        )
+        return
+
+
+    await callback.answer()
+
+
+    await callback.message.edit_text(
+        "<b>📦 Управление остатками</b>\n\n"
+        "Раздел подготовки склада.",
+        reply_markup=back_to_admin_keyboard,
+        parse_mode="HTML",
+    )
+
+
+
+# ===== ВКУСЫ =====
+
+@admin_router.callback_query(
+    F.data == "flavors_manage"
+)
+async def flavors_manage(callback: CallbackQuery):
+
+    if callback.from_user.id != ADMIN_ID:
+        await callback.answer(
+            "Нет доступа.",
+            show_alert=True
+        )
+        return
+
+
+    await callback.answer()
+
+
+    await callback.message.edit_text(
+        "<b>🌈 Управление вкусами</b>\n\n"
+        "Раздел добавления вкусов.",
+        reply_markup=back_to_admin_keyboard,
+        parse_mode="HTML",
+    )
+
+
 
 # ===== ОСТАЛЬНЫЕ РАЗДЕЛЫ =====
 
 @admin_router.callback_query(
-    F.data.startswith("admin_") & (F.data != "admin_menu")
+    F.data.startswith("admin_") 
+    & (F.data != "admin_menu")
+    & (F.data != "admin_stats")
 )
 async def admin_sections(callback: CallbackQuery):
 
@@ -115,11 +247,15 @@ async def admin_sections(callback: CallbackQuery):
 
 
     section_names = {
-        "admin_products": "📦 Товары",
+
         "admin_categories": "📂 Категории",
+
         "admin_users": "👥 Пользователи",
+
         "admin_orders": "🛒 Заказы",
+
         "admin_settings": "⚙️ Настройки",
+
     }
 
 
