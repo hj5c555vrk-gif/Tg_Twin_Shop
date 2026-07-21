@@ -284,7 +284,7 @@ async def add_product_description(
 
                     text=category.name,
 
-                    callback_data=f"category_{category.id}"
+                    callback_data=f"admin_category_{category.id}"
 
                 )
 
@@ -311,7 +311,7 @@ async def add_product_description(
 
 @admin_router.callback_query(
     AddProductStates.category,
-    F.data.startswith("category_")
+    F.data.startswith("admin_category_")
 )
 async def choose_category(
     callback: CallbackQuery,
