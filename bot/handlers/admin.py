@@ -3,11 +3,10 @@ from aiogram.types import Message
 from aiogram.filters import Command
 
 from bot.database.admin import ADMIN_ID
-from bot.keyboards.admin_key import admin_keyboard(
+from bot.keyboards.admin_key import (
     admin_keyboard,
     back_to_admin_keyboard,
 )
-
 
 admin_router = Router()
 
