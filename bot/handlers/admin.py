@@ -319,22 +319,30 @@ async def choose_category(
 ):
 
     if not is_admin(callback.from_user.id):
-
+        await callback.answer(
+            "Нет доступа",
+            show_alert=True
+        )
         return
 
+
     category_id = int(
-        callback.data.split("_")[1]
+        callback.data.split("_")[2]
     )
+
 
     await state.update_data(
         category_id=category_id
     )
 
+
     await callback.answer()
+
 
     await callback.message.answer(
         "💰 Введите стоимость товара:"
     )
+
 
     await state.set_state(
         AddProductStates.price
