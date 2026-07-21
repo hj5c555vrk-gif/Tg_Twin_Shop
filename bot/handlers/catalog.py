@@ -42,6 +42,13 @@ async def open_category(callback: CallbackQuery):
     category_id = int(
         callback.data.split("_")[1]
     )
+    
+    async with async_session() as session:
+
+    await increase_category_view(
+        session,
+        category_id
+    )
 
     async with async_session() as session:
         products = await get_products_by_category(
