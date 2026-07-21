@@ -24,6 +24,27 @@ def products_keyboard(products):
         ]
     )
 
+
     return InlineKeyboardMarkup(
         inline_keyboard=keyboard
+    )
+
+
+def product_keyboard():
+
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="🛒 Добавить в корзину",
+                    callback_data="add_cart"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text="⬅️ Назад к товарам",
+                    callback_data="back_products"
+                )
+            ]
+        ]
     )
