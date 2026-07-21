@@ -2,6 +2,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 
 def products_keyboard(products):
+
     keyboard = []
 
     for product in products:
@@ -18,7 +19,7 @@ def products_keyboard(products):
         [
             InlineKeyboardButton(
                 text="⬅️ Назад",
-                callback_data="back_to_catalog"
+                callback_data="back_catalog"
             )
         ]
     )
