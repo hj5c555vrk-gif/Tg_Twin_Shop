@@ -94,7 +94,7 @@ async def admin_analytics(callback: CallbackQuery):
 # ===== ТОВАРЫ =====
 
 @admin_router.callback_query(
-    F.data == "products"
+    F.data == "admin_products"
 )
 async def admin_products(callback: CallbackQuery):
 
@@ -229,9 +229,9 @@ async def flavors_manage(callback: CallbackQuery):
 # ===== ОСТАЛЬНЫЕ РАЗДЕЛЫ =====
 
 @admin_router.callback_query(
-    F.data.startswith("admin_") 
+    F.data.startswith("admin_")
     & (F.data != "admin_menu")
-    & (F.data != "admin_stats")
+    & (F.data != "admin_products")
 )
 async def admin_sections(callback: CallbackQuery):
 
