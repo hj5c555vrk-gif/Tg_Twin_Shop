@@ -1,5 +1,6 @@
 from aiogram import Router
 from aiogram.types import Message
+from aiogram.filters import Command
 
 
 admin_router = Router()
@@ -8,14 +9,17 @@ admin_router = Router()
 print("ADMIN ROUTER LOADED")
 
 
-@admin_router.message()
-async def admin_test(message: Message):
+@admin_router.message(Command("admin"))
+async def admin_panel(message: Message):
 
     print(
-        "MESSAGE RECEIVED:",
-        message.text
+        "ADMIN COMMAND RECEIVED:",
+        message.from_user.id
     )
 
     await message.answer(
-        "ADMIN ROUTER WORKS"
+        "🔐 Админ-панель\n\n"
+        "/stats — статистика\n"
+        "/users — пользователи\n"
+        "/products — товары"
     )
