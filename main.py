@@ -20,6 +20,7 @@ logging.basicConfig(level=logging.INFO)
 
 
 async def main():
+
     bot = Bot(
         token=BOT_TOKEN,
         default=DefaultBotProperties(
@@ -29,24 +30,30 @@ async def main():
 
     dp = Dispatcher()
 
+
     # Подключение всех обработчиков
     for router in routers:
         dp.include_router(router)
-        await dp.start_polling(bot)
+
 
     # Создание таблиц базы данных
     from bot.database.base import engine, async_session
     from bot.database.models import Base
 
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+        await conn.run_sync(
+            Base.metadata.create_all
+        )
 
-    # Добавление стартовых категорий
+
+    # Заполнение базы тестовыми данными
     async with async_session() as session:
         await seed_categories(session)
         await seed_products(session)
 
+
     print("Бот запущен с базой данных!")
+
 
     await dp.start_polling(bot)
 
