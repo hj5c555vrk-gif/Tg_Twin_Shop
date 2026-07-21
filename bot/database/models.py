@@ -188,3 +188,28 @@ class CartItem(Base):
     )
     
     from datetime import datetime
+    
+    
+class CategoryView(Base):
+    __tablename__ = "category_views"
+
+    id = Column(
+        Integer,
+        primary_key=True
+    )
+
+    category_id = Column(
+        Integer,
+        ForeignKey("categories.id"),
+        nullable=False
+    )
+
+    views = Column(
+        Integer,
+        default=0
+    )
+
+
+    category = relationship(
+        "Category"
+    )
