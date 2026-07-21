@@ -60,7 +60,8 @@ async def open_category(callback: CallbackQuery):
     await callback.answer()
     @catalog_router.callback_query(
     F.data == "back_catalog"
-)
+    )
+
 async def back_to_catalog(callback: CallbackQuery):
 
     async with async_session() as session:
