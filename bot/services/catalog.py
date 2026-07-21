@@ -1,9 +1,16 @@
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
+@user_router.message(Command("catalog"))
+async def show_catalog(message: Message):
+    async with async_session() as session:
+        categories = await get_categories(session)
 
-from bot.database.models import Category
+    if not categories:
+        await message.answer(
+            "Пока нет категорий.\nДобавьте их позже через админ-панель."
+        )
+        return
 
-
-async def get_categories(session: AsyncSession):
-    result = await session.execute(select(Category))
-    return result.scalars().all()
+    await message.answer(
+        "<b>📦 Каталог товаров</b>\n\nВыберите категорию:",
+        reply_markup=catalog_keyboard(categories),
+        parse_mode="HTML"
+    )
