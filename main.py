@@ -84,14 +84,16 @@ async def main():
 
 
 
-    # Заполнение базы тестовыми данными
+    # Первичная инициализация базы.
+# Категории создаются только при отсутствии.
+# Товары будут созданы только при первой установке
+# после доработки seed_products.py.
 
-    async with async_session() as session:
+async with async_session() as session:
 
-        await seed_categories(session)
+    await seed_categories(session)
 
-        #await seed_products(session)
-
+    await seed_products(session)
 
 
     print(
