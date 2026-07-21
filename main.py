@@ -10,6 +10,12 @@ from dotenv import load_dotenv
 from bot.handlers import routers
 from bot.database.seed_categories import seed_categories
 from bot.database.seed_products import seed_products
+import bot.handlers
+
+print(
+    "HANDLERS PATH:",
+    bot.handlers.__file__
+    )
 
 
 load_dotenv()
@@ -29,9 +35,6 @@ async def main():
     )
 
     dp = Dispatcher()
-    
-    print("ROUTERS:", routers)
-
 
     # Подключение всех обработчиков
     for router in routers:
