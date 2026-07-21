@@ -3,6 +3,7 @@ from aiogram.types import CallbackQuery
 
 from bot.database.base import async_session
 from bot.database.models import Product
+from bot.keyboards.product_key import product_keyboard
 
 
 product_router = Router()
@@ -40,8 +41,9 @@ async def show_product(callback: CallbackQuery):
 
 
     await callback.message.edit_text(
-        text,
-        parse_mode="HTML"
+    text,
+    reply_markup=product_keyboard(),
+    parse_mode="HTML"
     )
 
     await callback.answer()
