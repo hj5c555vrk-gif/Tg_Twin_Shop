@@ -18,6 +18,8 @@ async def cmd_start(message: Message):
             telegram_id=message.from_user.id,
             username=message.from_user.username,
             first_name=message.from_user.first_name
+            ) 
+
         await message.answer(
             "Сап 🖐️, это Twinstore!\n\n"
             "🗺️Команды Навигации \n\n"
