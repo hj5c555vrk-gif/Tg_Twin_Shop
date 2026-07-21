@@ -84,7 +84,17 @@ async def admin_analytics(callback: CallbackQuery):
         parse_mode="HTML",
     )
 
+@admin_router.callback_query(
+    F.data == "products"
+)
+async def admin_products(
+    callback: CallbackQuery
+):
 
+    await callback.message.edit_text(
+        "📦 товары ",
+        reply_markup=products_keyboard
+    )
 
 # ===== ОСТАЛЬНЫЕ РАЗДЕЛЫ =====
 
