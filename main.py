@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 
 from bot.handlers import routers
 from bot.database.seed_categories import seed_categories
+from bot.database.seed_products import seed_products
 
 
 load_dotenv()
@@ -42,6 +43,7 @@ async def main():
     # Добавление стартовых категорий
     async with async_session() as session:
         await seed_categories(session)
+        await seed_products(session)
 
     print("Бот запущен с базой данных!")
 
