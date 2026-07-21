@@ -31,18 +31,26 @@ async def get_popular_category(session):
     result = await session.execute(
         select(
             Category.name,
-            func.count(Category.id)
+            CategoryView.views
         )
-        .group_by(Category.name)
+        .join(
+            CategoryView.category
+        )
         .order_by(
-            func.count(Category.id).desc()
+            CategoryView.views.desc()
         )
     )
 
+
     category = result.first()
 
+
     if category:
-        return category[0]
+        return (
+            f"{category[0]} "
+            f"({category[1]} просмотров)"
+        )
+
 
     return "Нет данных"
 
