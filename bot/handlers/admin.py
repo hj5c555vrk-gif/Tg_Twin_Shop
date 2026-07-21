@@ -441,3 +441,270 @@ async def add_product_stock(
         reply_markup=products_keyboard
 
     )
+    
+    # ==========================================================
+# СПИСОК ТОВАРОВ
+# ==========================================================
+
+@admin_router.callback_query(
+    F.data == "products_list"
+)
+async def products_list(
+    callback: CallbackQuery
+):
+
+    if not is_admin(callback.from_user.id):
+
+        await callback.answer(
+            "Нет доступа",
+            show_alert=True
+        )
+
+        return
+
+    async with async_session() as session:
+
+        products = await get_all_products(session)
+
+    await callback.answer()
+
+    if not products:
+
+        await callback.message.edit_text(
+
+            "<b>📋 Список товаров</b>\n\n"
+            "❌ Товаров пока нет.",
+
+            parse_mode="HTML",
+
+            reply_markup=products_keyboard
+
+        )
+
+        return
+
+    keyboard = []
+
+    text = "<b>📋 Все товары</b>\n\n"
+
+    for product in products:
+
+        text += (
+            f"📦 <b>{product.name}</b>\n"
+            f"💰 {product.price} ₽\n"
+            f"📊 Остаток: {product.stock}\n\n"
+        )
+
+        keyboard.append([
+            InlineKeyboardButton(
+                text=f"✏️ {product.name}",
+                callback_data=f"edit_{product.id}"
+            )
+        ])
+
+    keyboard.append([
+        InlineKeyboardButton(
+            text="◀️ Назад",
+            callback_data="admin_products"
+        )
+    ])
+
+    await callback.message.edit_text(
+
+        text,
+
+        parse_mode="HTML",
+
+        reply_markup=InlineKeyboardMarkup(
+            inline_keyboard=keyboard
+        )
+
+    )
+
+
+# ==========================================================
+# РЕДАКТИРОВАНИЕ ТОВАРА
+# ==========================================================
+
+@admin_router.callback_query(
+    F.data.startswith("edit_")
+)
+async def edit_product(
+    callback: CallbackQuery
+):
+
+    if not is_admin(callback.from_user.id):
+        return
+
+    product_id = int(
+        callback.data.split("_")[1]
+    )
+
+    keyboard = InlineKeyboardMarkup(
+
+        inline_keyboard=[
+
+            [
+
+                InlineKeyboardButton(
+                    text="💰 Цена",
+                    callback_data=f"price_{product_id}"
+                )
+
+            ],
+
+            [
+
+                InlineKeyboardButton(
+                    text="📦 Остаток",
+                    callback_data=f"stock_{product_id}"
+                )
+
+            ],
+
+            [
+
+                InlineKeyboardButton(
+                    text="🗑 Удалить",
+                    callback_data=f"delete_{product_id}"
+                )
+
+            ],
+
+            [
+
+                InlineKeyboardButton(
+                    text="◀️ Назад",
+                    callback_data="products_list"
+                )
+
+            ]
+
+        ]
+
+    )
+
+    await callback.answer()
+
+    await callback.message.edit_text(
+
+        "<b>Редактирование товара</b>\n\n"
+        "Выберите действие.",
+
+        parse_mode="HTML",
+
+        reply_markup=keyboard
+
+    )
+
+
+# ==========================================================
+# УДАЛЕНИЕ
+# ==========================================================
+
+@admin_router.callback_query(
+    F.data.startswith("delete_")
+)
+async def delete_product_handler(
+    callback: CallbackQuery
+):
+
+    if not is_admin(callback.from_user.id):
+        return
+
+    product_id = int(
+        callback.data.split("_")[1]
+    )
+
+    async with async_session() as session:
+
+        await delete_product(
+            session,
+            product_id
+        )
+
+    await callback.answer(
+        "Удалено."
+    )
+
+    await products_list(callback)
+
+
+# ==========================================================
+# ИЗМЕНЕНИЕ ОСТАТКА
+# ==========================================================
+
+@admin_router.callback_query(
+    F.data.startswith("stock_")
+)
+async def edit_stock(
+    callback: CallbackQuery,
+    state: FSMContext
+):
+
+    if not is_admin(callback.from_user.id):
+        return
+
+    product_id = int(
+        callback.data.split("_")[1]
+    )
+
+    await state.update_data(
+        product_id=product_id
+    )
+
+    await callback.answer()
+
+    await callback.message.answer(
+
+        "Введите новый остаток:"
+
+    )
+
+    await state.set_state(
+        AddProductStates.edit_stock
+    )
+
+
+@admin_router.message(
+    AddProductStates.edit_stock
+)
+async def save_stock(
+    message: Message,
+    state: FSMContext
+):
+
+    try:
+
+        stock = int(
+            message.text
+        )
+
+    except ValueError:
+
+        await message.answer(
+            "Введите число."
+        )
+
+        return
+
+    data = await state.get_data()
+
+    async with async_session() as session:
+
+        await update_stock(
+
+            session,
+
+            data["product_id"],
+
+            stock
+
+        )
+
+    await state.clear()
+
+    await message.answer(
+        "✅ Остаток обновлён."
+    )
+    
