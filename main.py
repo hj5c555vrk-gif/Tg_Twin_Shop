@@ -90,7 +90,7 @@ async def main():
 
         await seed_categories(session)
 
-        await seed_products(session)
+        #await seed_products(session)
 
 
 
