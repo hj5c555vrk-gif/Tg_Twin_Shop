@@ -124,6 +124,11 @@ class User(Base):
         nullable=True
     )
     
+    is_admin = Column(
+    Boolean,
+    default=False
+    )
+    
 class Cart(Base):
     __tablename__ = "carts"
 
