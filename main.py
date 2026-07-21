@@ -33,7 +33,9 @@ async def main():
 
     # Подключение всех обработчиков
     for router in routers:
-        dp.include_router(router) print("CONNECTED ROUTERS:", routers)
+        dp.include_router(router) 
+        
+        print("CONNECTED ROUTERS:", routers)
 
 
     # Создание таблиц базы данных
