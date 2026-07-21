@@ -45,9 +45,9 @@ async def open_category(callback: CallbackQuery):
     
     async with async_session() as session:
 
-    await increase_category_view(
-        session,
-        category_id
+        await increase_category_view(
+            session,
+            category_id
     )
 
     async with async_session() as session:
