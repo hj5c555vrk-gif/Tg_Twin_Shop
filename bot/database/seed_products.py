@@ -4,6 +4,7 @@ from bot.database.models import Category, Product
 
 
 PRODUCTS = [
+
     {
         "name": "Blueberry Ice",
         "description": "Ягодный вкус с холодком",
@@ -11,6 +12,7 @@ PRODUCTS = [
         "image": None,
         "category": "🧃 Жидкости",
     },
+
     {
         "name": "Mango Ice",
         "description": "Манго с освежающим эффектом",
@@ -18,6 +20,7 @@ PRODUCTS = [
         "image": None,
         "category": "🧃 Жидкости",
     },
+
     {
         "name": "Strawberry Mix",
         "description": "Клубничный микс",
@@ -33,6 +36,7 @@ PRODUCTS = [
         "image": None,
         "category": "⚙️ Испарители",
     },
+
     {
         "name": "Испаритель 1.2Ω",
         "description": "Экономичный вариант для MTL затяжки",
@@ -48,6 +52,7 @@ PRODUCTS = [
         "image": None,
         "category": "🧜🏼‍♂️ Снюс",
     },
+
 ]
 
 
@@ -57,33 +62,36 @@ async def seed_products(session):
 
         category_result = await session.execute(
             select(Category)
-            .where(Category.name == item["category"])
+            .where(
+                Category.name == item["category"]
+            )
         )
 
-        category = category_result.scalar()
+        category = category_result.scalar_one_or_none()
+
 
         if not category:
             continue
 
 
-        product_result = await session.execute(
-            select(Product)
-            .where(Product.name == item["name"])
-        )
-
-        product_exists = product_result.scalar()
-
-        if product_exists:
-            continue
-
-
         product = Product(
+
             name=item["name"],
+
             description=item["description"],
+
             price=item["price"],
+
             image=item["image"],
-            category_id=category.id
+
+            category_id=category.id,
+
+            stock=0,
+
+            available=False
+
         )
+
 
         session.add(product)
 
