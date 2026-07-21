@@ -1,8 +1,5 @@
 from aiogram import Router, F
-from aiogram.types import (
-    CallbackQuery,
-    Message
-)
+from aiogram.types import CallbackQuery, Message
 from aiogram.filters import Command
 
 from bot.database.base import async_session
@@ -18,14 +15,11 @@ from bot.keyboards.product_key import products_keyboard
 catalog_router = Router()
 
 
-
 # ==================================================
 # КАТАЛОГ
 # ==================================================
 
-@catalog_router.message(
-    Command("catalog")
-)
+@catalog_router.message(Command("catalog"))
 async def show_catalog(
     message: Message
 ):
@@ -72,9 +66,21 @@ async def open_category(
     callback: CallbackQuery
 ):
 
-    category_id = int(
-        callback.data.split("_")[1]
-    )
+    try:
+
+        category_id = int(
+            callback.data.split("_")[1]
+        )
+
+    except ValueError:
+
+        await callback.answer(
+            "Ошибка категории.",
+            show_alert=True
+        )
+
+        return
+
 
 
     async with async_session() as session:
@@ -110,6 +116,7 @@ async def open_category(
 
 
     if not products:
+
 
         await callback.message.edit_text(
 
@@ -160,7 +167,9 @@ async def back_to_catalog(
     if not categories:
 
         await callback.message.edit_text(
+
             "📦 Каталог пуст."
+
         )
 
         await callback.answer()
