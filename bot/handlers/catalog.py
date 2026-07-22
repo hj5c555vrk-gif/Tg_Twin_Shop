@@ -113,7 +113,8 @@ async def open_category(
     callback: CallbackQuery
 ):
 
-    print("CATEGORY CLICK:", callback.data)
+    print("1. CATEGORY:", callback.data)
+
 
     try:
 
@@ -121,8 +122,12 @@ async def open_category(
             callback.data.split("_")[1]
         )
 
+        print("2. CATEGORY ID:", category_id)
+
 
     except ValueError:
+
+        print("3. ERROR ID")
 
         await callback.answer(
             "Ошибка категории.",
@@ -132,13 +137,18 @@ async def open_category(
         return
 
 
-
     async with async_session() as session:
+
+        print("4. DB START")
+
 
         await increase_category_view(
             session,
             category_id
         )
+
+
+        print("5. VIEW UPDATED")
 
 
         products = await get_products_by_category(
@@ -147,46 +157,10 @@ async def open_category(
         )
 
 
-
-    products = [
-        product
-        for product in products
-        if product.available
-    ]
-
-
-    if not products: 
-        keyboard = InlineKeyboardMarkup(
-        inline_keyboard=[
-                InlineKeyboardButton(
-                    text="◀️ Назад",
-                    callback_data="back_catalog"
-                )
-            ]
-    )
-
-    await callback.message.edit_text(
-        "📦 В этой категории пока нет доступных товаров.",
-        reply_markup=keyboard
-    )
-
-    await callback.answer()
-
-    return
-
-
-    await callback.message.edit_text(
-
-        "📦 Выберите товар:",
-
-        reply_markup=products_keyboard(products)
-
-    )
-
-
-    await callback.answer()
-
-
+        print(
+            "6. PRODUCTS:",
+            products
+        )
 
 # ==================================================
 # НАЗАД В КАТАЛОГ
