@@ -9,78 +9,43 @@ from aiogram.fsm.storage.memory import MemoryStorage
 
 from dotenv import load_dotenv
 
-
 from bot.handlers import routers
 from bot.database.seed_categories import seed_categories
 from bot.database.seed_products import seed_products
 
-import bot.handlers
-
-
-
 load_dotenv()
-
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
-
-logging.basicConfig(
-    level=logging.INFO
-)
-
+logging.basicConfig(level=logging.INFO)
 
 
 async def main():
-
     bot = Bot(
-
         token=BOT_TOKEN,
-
         default=DefaultBotProperties(
             parse_mode=ParseMode.HTML
         )
-
     )
-
-
-    # Хранилище состояний FSM
 
     storage = MemoryStorage()
+    dp = Dispatcher(storage=storage)
 
-
-    dp = Dispatcher(
-        storage=storage
-    )
-
-
-
-    # Подключение всех обработчиков
-
+    # Подключение роутеров
     for router in routers:
+        dp.include_router(router)
 
-        dp.include_router(
-            router
-        )
+    print("CONNECTED ROUTERS:", routers)
 
-        print(
-            "CONNECTED ROUTERS:",
-            routers
-        )
-
-
-
-    # Создание таблиц базы данных
-
+    # База данных
     from bot.database.base import engine, async_session
-
     from bot.database.models import Base
 
-
-async with engine.begin() as conn:
+    async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-    # Первичная инициализация базы
-async with async_session() as session:
+    # Первичная инициализация
+    async with async_session() as session:
         await seed_categories(session)
         await seed_products(session)
 
@@ -89,7 +54,5 @@ async with async_session() as session:
     await dp.start_polling(bot)
 
 
-
 if __name__ == "__main__":
-
     asyncio.run(main())
