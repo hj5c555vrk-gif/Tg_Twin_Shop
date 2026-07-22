@@ -11,3 +11,38 @@ start_keyboard = InlineKeyboardMarkup(
         ]
     ]
 )
+
+
+user_menu_keyboard = InlineKeyboardMarkup(
+    inline_keyboard=[
+
+        [
+            InlineKeyboardButton(
+                text="📦 Каталог",
+                callback_data="catalog"
+            )
+        ],
+
+        [
+            InlineKeyboardButton(
+                text="🛒 Корзина",
+                callback_data="cart"
+            )
+        ],
+
+        [
+            InlineKeyboardButton(
+                text="📦 Мои заказы",
+                callback_data="orders"
+            )
+        ],
+
+        [
+            InlineKeyboardButton(
+                text="ℹ️ Информация",
+                callback_data="info"
+            )
+        ]
+
+    ]
+)
