@@ -112,7 +112,9 @@ async def show_catalog_callback(
 async def open_category(
     callback: CallbackQuery
 ):
-print("CATEGORY CLICK:", callback.data)
+
+    print("CATEGORY CLICK:", callback.data)
+
     try:
 
         category_id = int(
