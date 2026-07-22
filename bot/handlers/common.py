@@ -56,3 +56,33 @@ async def admin_handler(message: Message, state: FSMContext):
         "🛠 Админ-панель",
         reply_markup=admin_keyboard()
     )
+    
+    @common_router.message(Command("state"))
+async def state_handler(message: Message, state: FSMContext):
+    """
+    Показывает текущее состояние FSM.
+    """
+
+    current_state = await state.get_state()
+
+    if current_state:
+        await message.answer(
+            f"📍 Текущее состояние:\n\n{current_state}"
+        )
+    else:
+        await message.answer(
+            "FSM сейчас не используется."
+        )
+
+
+@common_router.message(Command("clear"))
+async def clear_handler(message: Message, state: FSMContext):
+    """
+    Принудительно очищает FSM.
+    """
+
+    await state.clear()
+
+    await message.answer(
+        "🧹 FSM полностью очищен."
+    )
