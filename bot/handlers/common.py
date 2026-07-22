@@ -11,37 +11,32 @@ common_router = Router()
 
 
 @common_router.message(Command("cancel"))
-async def cancel_handler(message: Message, state: FSMContext):
-
-    current_state = await state.get_state()
-
-    if current_state is None:
-        await message.answer(
-            "❌ Сейчас нет активной операции."
-        )
-        return
+async def cancel_handler(
+    message: Message,
+    state: FSMContext
+):
 
     await state.clear()
 
     await message.answer(
-        "✅ Операция отменена.\n\n"
-        "Все введённые данные очищены.",
-        reply_markup=admin_keyboard
+        "✅ Операция отменена."
     )
 
-
-@common_router.message(Command("menu"))
-async def menu_handler(message: Message, state: FSMContext):
-
-    await state.clear()
+@common_router.message(
+    Command("menu"),
+    AdminFilter()
+)
+async def admin_menu_handler(message: Message):
 
     await message.answer(
-        "📋 Главное меню.",
+        "🛠 Меню администратора",
         reply_markup=admin_keyboard
     )
 
-
-@common_router.message(Command("admin"))
+@common_router.message(
+    Command("admin"),
+    AdminFilter()
+)
 async def admin_handler(message: Message, state: FSMContext):
 
     await state.clear()
