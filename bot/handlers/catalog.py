@@ -1,6 +1,7 @@
 from aiogram import Router, F
 from aiogram.types import CallbackQuery, Message
 from aiogram.filters import Command
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from bot.database.base import async_session
 
@@ -152,17 +153,27 @@ async def open_category(
     ]
 
 
-
     if not products:
 
-        await callback.message.edit_text(
-            "📦 В этой категории пока нет доступных товаров."
-        )
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="◀️ Назад",
+                    callback_data="back_catalog"
+                )
+            ]
+        ]
+    )
 
-        await callback.answer()
+    await callback.message.edit_text(
+        "📦 В этой категории пока нет доступных товаров.",
+        reply_markup=keyboard
+    )
 
-        return
+    await callback.answer()
 
+    return
 
 
     await callback.message.edit_text(
