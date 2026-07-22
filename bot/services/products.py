@@ -386,3 +386,20 @@ async def search_products(
     )
 
     return result.scalars().all()
+    all_products_result = await session.execute(
+    select(Product)
+)
+
+all_products = all_products_result.scalars().all()
+
+print("ВСЕ ТОВАРЫ В БАЗЕ:")
+
+for p in all_products:
+    print(
+        "ID:",
+        p.id,
+        "NAME:",
+        p.name,
+        "CATEGORY_ID:",
+        p.category_id
+    )
