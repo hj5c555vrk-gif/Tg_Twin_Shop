@@ -76,35 +76,17 @@ async def main():
     from bot.database.models import Base
 
 
-    async with engine.begin() as conn:
+async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 
-        await conn.run_sync(
-            Base.metadata.create_all
-        )
-
-
-
-    # Первичная инициализация базы.
-# Категории создаются только при отсутствии.
-# Товары будут созданы только при первой установке
-# после доработки seed_products.py.
-
+    # Первичная инициализация базы
 async with async_session() as session:
+        await seed_categories(session)
+        await seed_products(session)
 
-    await seed_categories(session)
+    print("Бот запущен с базой данных!")
 
-    await seed_products(session)
-
-
-    print(
-        "Бот запущен с базой данных!"
-    )
-
-
-
-    await dp.start_polling(
-        bot
-    )
+    await dp.start_polling(bot)
 
 
 
