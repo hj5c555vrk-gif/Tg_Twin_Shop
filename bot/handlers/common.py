@@ -3,7 +3,7 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
-from bot.keyboards.admin import admin_keyboard
+from bot.keyboards.admin_key import admin_keyboard
 
 
 common_router = Router()
@@ -25,7 +25,7 @@ async def cancel_handler(message: Message, state: FSMContext):
     await message.answer(
         "✅ Операция отменена.\n\n"
         "Все введённые данные очищены.",
-        reply_markup=admin_keyboard()
+        reply_markup=admin_keyboard
     )
 
 
@@ -36,7 +36,7 @@ async def menu_handler(message: Message, state: FSMContext):
 
     await message.answer(
         "📋 Главное меню.",
-        reply_markup=admin_keyboard()
+        reply_markup=admin_keyboard
     )
 
 
@@ -47,7 +47,7 @@ async def admin_handler(message: Message, state: FSMContext):
 
     await message.answer(
         "🛠 Админ-панель.",
-        reply_markup=admin_keyboard()
+        reply_markup=admin_keyboard
     )
 
 
