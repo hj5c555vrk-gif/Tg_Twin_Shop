@@ -12,25 +12,6 @@ async def get_products_by_category(
     category_id: int
 ):
 
-    result = await session.execute(
-        select(Product)
-        .where(
-            Product.category_id == category_id
-        )
-        .order_by(
-            Product.id
-        )
-    )
-
-    return result.scalars().all()
-
-
-
-async def get_products_by_category(
-    session: AsyncSession,
-    category_id: int
-):
-
     print(
         "SEARCH CATEGORY:",
         category_id
@@ -62,6 +43,30 @@ async def get_products_by_category(
         )
 
     return products
+
+
+
+async def create_product(
+    session: AsyncSession,
+    name: str,
+    description: str,
+    category_id: int,
+    price: float,
+    stock: int
+):
+
+    category_result = await session.execute(
+        select(Category)
+        .where(
+            Category.id == category_id
+        )
+    )
+
+    category = category_result.scalar_one_or_none()
+
+
+    if category is None:
+        return None
 
 
     product = Product(
