@@ -28,6 +28,7 @@ async def main():
             parse_mode=ParseMode.HTML
         )
     )
+    await set_commands(bot)
 
     storage = MemoryStorage()
     dp = Dispatcher(storage=storage)
