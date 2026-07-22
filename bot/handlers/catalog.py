@@ -77,7 +77,7 @@ async def show_catalog_callback(callback: CallbackQuery):
 
     await callback.answer()
 
-    await open_catalog(callback.message)
+    await open_catalog(callback)
 
 
 # ==================================================
