@@ -43,7 +43,7 @@ async def cmd_start(message: Message):
 
     await message.answer(
     " Сап 🖖 \n
-    "это Gadki Sladki twinbot от канала @twinstore_gng!\n\n"
+    "это гадкий и сладкий twinbot от канала @twinstore_gng!\n\n"
     "Нажми эту чертову кнопку ниже, чтобы открыть это чертово меню.",
     reply_markup=start_keyboard
 )
