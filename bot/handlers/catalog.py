@@ -25,22 +25,34 @@ async def open_catalog(target):
 
         categories = await get_categories(session)
 
+
     if not categories:
 
+        text = "📦 Каталог пока пуст."
+
+
         if isinstance(target, Message):
-            await target.answer("📦 Каталог пока пуст.")
+
+            await target.answer(text)
+
         else:
-            await target.edit_text("📦 Каталог пока пуст.")
+
+            await target.message.edit_text(text)
+
 
         return
+
 
     text = (
         "<b>📦 Каталог товаров</b>\n\n"
         "Выберите категорию:"
     )
 
+
     keyboard = catalog_keyboard(categories)
 
+
+    # Если вызвана команда /catalog
     if isinstance(target, Message):
 
         await target.answer(
@@ -49,13 +61,16 @@ async def open_catalog(target):
             parse_mode="HTML"
         )
 
-    else:
 
-        await target.edit_text(
+    # Если вызвана кнопка из меню
+    elif isinstance(target, CallbackQuery):
+
+        await target.message.edit_text(
             text,
             reply_markup=keyboard,
             parse_mode="HTML"
         )
+
 
 
 # ==================================================
@@ -68,16 +83,22 @@ async def show_catalog(message: Message):
     await open_catalog(message)
 
 
+
 # ==================================================
 # КНОПКА "📦 Каталог" ИЗ ПОЛЬЗОВАТЕЛЬСКОГО МЕНЮ
 # ==================================================
 
-@catalog_router.callback_query(F.data == "catalog")
-async def show_catalog_callback(callback: CallbackQuery):
+@catalog_router.callback_query(
+    F.data == "catalog"
+)
+async def show_catalog_callback(
+    callback: CallbackQuery
+):
 
     await callback.answer()
 
     await open_catalog(callback)
+
 
 
 # ==================================================
@@ -97,6 +118,7 @@ async def open_category(
             callback.data.split("_")[1]
         )
 
+
     except ValueError:
 
         await callback.answer(
@@ -106,6 +128,8 @@ async def open_category(
 
         return
 
+
+
     async with async_session() as session:
 
         await increase_category_view(
@@ -113,16 +137,21 @@ async def open_category(
             category_id
         )
 
+
         products = await get_products_by_category(
             session,
             category_id
         )
+
+
 
     products = [
         product
         for product in products
         if product.available
     ]
+
+
 
     if not products:
 
@@ -134,12 +163,19 @@ async def open_category(
 
         return
 
+
+
     await callback.message.edit_text(
+
         "📦 Выберите товар:",
+
         reply_markup=products_keyboard(products)
+
     )
 
+
     await callback.answer()
+
 
 
 # ==================================================
@@ -155,4 +191,4 @@ async def back_to_catalog(
 
     await callback.answer()
 
-    await open_catalog(callback.message)
+    await open_catalog(callback)
