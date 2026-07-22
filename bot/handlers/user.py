@@ -1,6 +1,8 @@
 from aiogram import Router, F
 from aiogram.types import Message
 from aiogram.filters import Command
+from aiogram import F
+from aiogram.types import CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from bot.database.base import async_session
@@ -47,3 +49,16 @@ async def cmd_start(message: Message):
     "Нажми эту чертову кнопку ниже, чтобы открыть это чертово меню.",
     reply_markup=start_keyboard
 )
+
+
+
+@user_router.callback_query(F.data == "user_menu")
+
+async def user_menu_callback(callback: CallbackQuery):
+
+    await callback.answer()
+
+    await callback.message.edit_text(
+
+        "📋 Пользовательское меню находится в разработке."
+        )
