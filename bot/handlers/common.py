@@ -4,6 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
 from bot.keyboards.admin_key import admin_keyboard
+from bot.filters.admin import AdminFilter
 
 
 common_router = Router()
