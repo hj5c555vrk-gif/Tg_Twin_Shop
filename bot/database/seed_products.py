@@ -56,44 +56,53 @@ PRODUCTS = [
 ]
 
 
+from sqlalchemy import select
+
+from bot.database.models import Category, Product
+
+
 async def seed_products(session):
 
     for item in PRODUCTS:
 
+        # Ищем категорию
         category_result = await session.execute(
-            select(Category)
-            .where(
+            select(Category).where(
                 Category.name == item["category"]
             )
         )
 
         category = category_result.scalar_one_or_none()
 
-
         if not category:
             continue
 
-
-        product = Product(
-
-            name=item["name"],
-
-            description=item["description"],
-
-            price=item["price"],
-
-            image=item["image"],
-
-            category_id=category.id,
-
-            stock=0,
-
-            available=False
-
+        # Проверяем, существует ли уже такой товар
+        product_result = await session.execute(
+            select(Product).where(
+                Product.name == item["name"],
+                Product.category_id == category.id
+            )
         )
 
+        existing_product = product_result.scalar_one_or_none()
 
-        session.add(product)
+        # Если товар уже есть — пропускаем
+        if existing_product:
+            continue
 
+        # Создаем только отсутствующий товар
+        session.add(
+            Product(
+                name=item["name"],
+                description=item["description"],
+                price=item["price"],
+                image=item["image"],
+                category_id=category.id,
+                stock=0,
+                available=False,
+            )
+        )
 
     await session.commit()
+           
