@@ -47,7 +47,7 @@ async def main():
     # Первичная инициализация
     async with async_session() as session:
         await seed_categories(session)
-        await seed_products(session)
+        #await seed_products(session)
 
     print("Бот запущен с базой данных!")
 
