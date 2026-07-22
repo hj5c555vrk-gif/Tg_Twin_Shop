@@ -390,16 +390,114 @@ async def search_products(
     select(Product)
 )
 
-all_products = all_products_result.scalars().all()
+async def get_products_by_category(
+    session: AsyncSession,
+    category_id: int
+):
 
-print("ВСЕ ТОВАРЫ В БАЗЕ:")
-
-for p in all_products:
     print(
-        "ID:",
-        p.id,
-        "NAME:",
-        p.name,
-        "CATEGORY_ID:",
-        p.category_id
+        "SEARCH CATEGORY:",
+        category_id
     )
+
+
+    result = await session.execute(
+        select(Product)
+        .where(
+            Product.category_id == category_id
+        )
+        .order_by(
+            Product.id
+        )
+    )
+
+
+    products = result.scalars().all()
+
+
+    print(
+        "FOUND PRODUCTS IN CATEGORY:",
+        len(products)
+    )
+
+
+    for product in products:
+
+        print(
+            "CATEGORY PRODUCT:",
+            "ID:",
+            product.id,
+            "NAME:",
+            product.name,
+            "CATEGORY_ID:",
+            product.category_id,
+            "AVAILABLE:",
+            product.available
+        )
+
+
+    # ==============================
+    # ДИАГНОСТИКА ВСЕХ ТОВАРОВ
+    # ==============================
+
+    all_products_result = await session.execute(
+        select(Product)
+        .order_by(
+            Product.id
+        )
+    )
+
+
+    all_products = all_products_result.scalars().all()
+
+
+    print(
+        "===== ВСЕ ТОВАРЫ В БАЗЕ ====="
+    )
+
+
+    for product in all_products:
+
+        print(
+            "ID:",
+            product.id,
+            "| NAME:",
+            product.name,
+            "| CATEGORY_ID:",
+            product.category_id,
+            "| AVAILABLE:",
+            product.available
+        )
+
+
+    # ==============================
+    # ДИАГНОСТИКА ВСЕХ КАТЕГОРИЙ
+    # ==============================
+
+    categories_result = await session.execute(
+        select(Category)
+        .order_by(
+            Category.id
+        )
+    )
+
+
+    categories = categories_result.scalars().all()
+
+
+    print(
+        "===== ВСЕ КАТЕГОРИИ В БАЗЕ ====="
+    )
+
+
+    for category in categories:
+
+        print(
+            "ID:",
+            category.id,
+            "| NAME:",
+            category.name
+        )
+
+
+    return products
