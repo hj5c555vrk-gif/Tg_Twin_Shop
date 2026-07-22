@@ -16,43 +16,68 @@ catalog_router = Router()
 
 
 # ==================================================
-# КАТАЛОГ
+# ОБЩАЯ ФУНКЦИЯ ОТКРЫТИЯ КАТАЛОГА
 # ==================================================
 
-@catalog_router.message(Command("catalog"))
-async def show_catalog(
-    message: Message
-):
+async def open_catalog(target):
 
     async with async_session() as session:
 
-        categories = await get_categories(
-            session
-        )
-
+        categories = await get_categories(session)
 
     if not categories:
 
-        await message.answer(
-            "📦 Каталог пока пуст."
-        )
+        if isinstance(target, Message):
+            await target.answer("📦 Каталог пока пуст.")
+        else:
+            await target.edit_text("📦 Каталог пока пуст.")
 
         return
 
-
-    await message.answer(
-
+    text = (
         "<b>📦 Каталог товаров</b>\n\n"
-        "Выберите категорию:",
-
-        reply_markup=catalog_keyboard(
-            categories
-        ),
-
-        parse_mode="HTML"
-
+        "Выберите категорию:"
     )
 
+    keyboard = catalog_keyboard(categories)
+
+    if isinstance(target, Message):
+
+        await target.answer(
+            text,
+            reply_markup=keyboard,
+            parse_mode="HTML"
+        )
+
+    else:
+
+        await target.edit_text(
+            text,
+            reply_markup=keyboard,
+            parse_mode="HTML"
+        )
+
+
+# ==================================================
+# КОМАНДА /catalog
+# ==================================================
+
+@catalog_router.message(Command("catalog"))
+async def show_catalog(message: Message):
+
+    await open_catalog(message)
+
+
+# ==================================================
+# КНОПКА "📦 Каталог" ИЗ ПОЛЬЗОВАТЕЛЬСКОГО МЕНЮ
+# ==================================================
+
+@catalog_router.callback_query(F.data == "catalog")
+async def show_catalog_callback(callback: CallbackQuery):
+
+    await callback.answer()
+
+    await open_catalog(callback.message)
 
 
 # ==================================================
@@ -81,68 +106,40 @@ async def open_category(
 
         return
 
-
-
     async with async_session() as session:
 
-
         await increase_category_view(
-
             session,
-
             category_id
-
         )
-
 
         products = await get_products_by_category(
-
             session,
-
             category_id
-
         )
 
-
     products = [
-
         product
-
         for product in products
-
         if product.available
-
     ]
-
 
     if not products:
 
-
         await callback.message.edit_text(
-
             "📦 В этой категории пока нет доступных товаров."
-
         )
 
         await callback.answer()
 
         return
 
-
-
     await callback.message.edit_text(
-
         "📦 Выберите товар:",
-
-        reply_markup=products_keyboard(
-            products
-        )
-
+        reply_markup=products_keyboard(products)
     )
 
-
     await callback.answer()
-
 
 
 # ==================================================
@@ -156,40 +153,6 @@ async def back_to_catalog(
     callback: CallbackQuery
 ):
 
-
-    async with async_session() as session:
-
-        categories = await get_categories(
-            session
-        )
-
-
-    if not categories:
-
-        await callback.message.edit_text(
-
-            "📦 Каталог пуст."
-
-        )
-
-        await callback.answer()
-
-        return
-
-
-
-    await callback.message.edit_text(
-
-        "<b>📦 Каталог товаров</b>\n\n"
-        "Выберите категорию:",
-
-        reply_markup=catalog_keyboard(
-            categories
-        ),
-
-        parse_mode="HTML"
-
-    )
-
-
     await callback.answer()
+
+    await open_catalog(callback.message)
