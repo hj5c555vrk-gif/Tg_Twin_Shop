@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 from bot.handlers import routers
 from bot.database.seed_categories import seed_categories
 from bot.database.seed_products import seed_products
+from bot.utils.commands import set_commands
 
 load_dotenv()
 
