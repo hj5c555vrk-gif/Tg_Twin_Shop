@@ -41,6 +41,6 @@ async def cmd_start(message: Message):
 
 
     await message.answer(
-        "Сап, Это Гдакий сладкий ДвойнойБот
-        от канала "https://t.me/Twinstore_gng""
+        "Сап, 🖐️ /n Это Гдакий сладкий ДвойнойБот
+        от канала Twinstore/n Выбери что пожелаешь и мб мой сервак выдержит"
     )
