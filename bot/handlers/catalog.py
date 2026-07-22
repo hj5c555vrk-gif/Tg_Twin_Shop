@@ -153,17 +153,14 @@ async def open_category(
     ]
 
 
-    if not products:
-
-    keyboard = InlineKeyboardMarkup(
+    if not products: 
+        keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
-            [
                 InlineKeyboardButton(
                     text="◀️ Назад",
                     callback_data="back_catalog"
                 )
             ]
-        ]
     )
 
     await callback.message.edit_text(
