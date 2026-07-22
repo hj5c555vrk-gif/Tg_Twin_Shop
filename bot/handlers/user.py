@@ -8,6 +8,7 @@ from bot.services.catalog import get_categories
 from bot.keyboards.catalog_key import catalog_keyboard
 from bot.services.user import get_or_create_user
 from bot.database.models import User
+from bot.keyboards.user_key import start_keyboard
 
 user_router = Router()
 
@@ -41,5 +42,8 @@ async def cmd_start(message: Message):
 
 
     await message.answer(
-        "Сап, 🖐️ \n👨🏻‍🎤 Это Gадакий сладкий twinbot от каннала @twinstore_gng 👻 \nВыбери что пожелаешь и мб мой сервак выдержит"
-    )
+    " Сап 🖖 \n
+    "это Gadki Sladki twinbot от канала @twinstore_gng!\n\n"
+    "Нажми эту чертову кнопку ниже, чтобы открыть это чертово меню.",
+    reply_markup=start_keyboard
+)
