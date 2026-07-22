@@ -53,7 +53,6 @@ async def cmd_start(message: Message):
 
 
 @user_router.callback_query(F.data == "user_menu")
-
 async def user_menu_callback(callback: CallbackQuery):
 
     await callback.answer()
