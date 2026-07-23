@@ -101,35 +101,28 @@ async def run_async_migrations():
     )
 
 
-    async with connectable.connect() as connection:
+async with connectable.connect() as connection:
 
+    await connection.run_sync(
 
-        await connection.run_sync(
+        lambda sync_connection:
 
-            lambda sync_connection:
+        context.configure(
 
-            context.configure(
+            connection=sync_connection,
 
-                connection=sync_connection,
-
-                target_metadata=target_metadata,
-
-            )
-
+            target_metadata=target_metadata,
         )
+    )
 
+    await connection.run_sync(
 
-        await connection.run_sync(
+        lambda connection:
 
-            context.run_migrations
-
-        )
-
-
-    await connectable.dispose()
-
-
-
+        context.run_migrations()
+    )
+        
+        
 def run_migrations_online() -> None:
 
     asyncio.run(
