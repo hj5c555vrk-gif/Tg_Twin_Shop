@@ -1,7 +1,11 @@
 from aiogram import Router, F
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import (
+    CallbackQuery,
+    Message,
+    InlineKeyboardMarkup,
+    InlineKeyboardButton,
+)
 from aiogram.filters import Command
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from bot.database.base import async_session
 
@@ -26,11 +30,9 @@ async def open_catalog(target):
 
         categories = await get_categories(session)
 
-
     if not categories:
 
         text = "📦 Каталог пока пуст."
-
 
         if isinstance(target, Message):
 
@@ -40,20 +42,15 @@ async def open_catalog(target):
 
             await target.message.edit_text(text)
 
-
         return
-
 
     text = (
         "<b>📦 Каталог товаров</b>\n\n"
         "Выберите категорию:"
     )
 
-
     keyboard = catalog_keyboard(categories)
 
-
-    # Если вызвана команда /catalog
     if isinstance(target, Message):
 
         await target.answer(
@@ -62,8 +59,6 @@ async def open_catalog(target):
             parse_mode="HTML"
         )
 
-
-    # Если вызвана кнопка из меню
     elif isinstance(target, CallbackQuery):
 
         await target.message.edit_text(
@@ -71,7 +66,6 @@ async def open_catalog(target):
             reply_markup=keyboard,
             parse_mode="HTML"
         )
-
 
 
 # ==================================================
@@ -84,9 +78,8 @@ async def show_catalog(message: Message):
     await open_catalog(message)
 
 
-
 # ==================================================
-# КНОПКА "📦 Каталог" ИЗ ПОЛЬЗОВАТЕЛЬСКОГО МЕНЮ
+# КНОПКА "📦 Каталог"
 # ==================================================
 
 @catalog_router.callback_query(
@@ -101,7 +94,6 @@ async def show_catalog_callback(
     await open_catalog(callback)
 
 
-
 # ==================================================
 # ОТКРЫТИЕ КАТЕГОРИИ
 # ==================================================
@@ -113,21 +105,13 @@ async def open_category(
     callback: CallbackQuery
 ):
 
-    print("1. CATEGORY:", callback.data)
-
-
     try:
 
         category_id = int(
             callback.data.split("_")[1]
         )
 
-        print("2. CATEGORY ID:", category_id)
-
-
     except ValueError:
-
-        print("3. ERROR ID")
 
         await callback.answer(
             "Ошибка категории.",
@@ -136,31 +120,53 @@ async def open_category(
 
         return
 
-
     async with async_session() as session:
-
-        print("4. DB START")
-
 
         await increase_category_view(
             session,
             category_id
         )
 
-
-        print("5. VIEW UPDATED")
-
-
         products = await get_products_by_category(
             session,
             category_id
         )
 
+    products = [
+        product
+        for product in products
+        if product.available
+    ]
 
-        print(
-            "6. PRODUCTS:",
-            products
+    if not products:
+
+        keyboard = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text="◀️ Назад",
+                        callback_data="back_catalog"
+                    )
+                ]
+            ]
         )
+
+        await callback.message.edit_text(
+            "📦 В этой категории пока нет доступных товаров.",
+            reply_markup=keyboard
+        )
+
+        await callback.answer()
+
+        return
+
+    await callback.message.edit_text(
+        "📦 Выберите товар:",
+        reply_markup=products_keyboard(products)
+    )
+
+    await callback.answer()
+
 
 # ==================================================
 # НАЗАД В КАТАЛОГ
