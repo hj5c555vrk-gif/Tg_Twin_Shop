@@ -97,8 +97,8 @@ async def run_async_migrations():
         prefix="sqlalchemy.",
 
         poolclass=pool.NullPool,
-
     )
+
 
 
 async with connectable.connect() as connection:
@@ -112,14 +112,18 @@ async with connectable.connect() as connection:
             connection=sync_connection,
 
             target_metadata=target_metadata,
+
         )
+
     )
+
 
     await connection.run_sync(
 
         lambda connection:
 
         context.run_migrations()
+
     )
         
         
