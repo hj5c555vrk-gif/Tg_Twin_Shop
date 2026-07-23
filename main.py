@@ -2,17 +2,19 @@ import asyncio
 import logging
 import os
 
+from dotenv import load_dotenv
+
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 
-from dotenv import load_dotenv
-
 from bot.handlers import routers
+from bot.database.base import engine, async_session
+from bot.database.models import Base
 from bot.database.seed_categories import seed_categories
 from bot.database.seed_products import seed_products
-from bot.utils.commands import set_commands
+
 
 load_dotenv()
 
@@ -22,34 +24,29 @@ logging.basicConfig(level=logging.INFO)
 
 
 async def main():
+
     bot = Bot(
         token=BOT_TOKEN,
         default=DefaultBotProperties(
             parse_mode=ParseMode.HTML
         )
     )
-    await set_commands(bot)
 
-    storage = MemoryStorage()
-    dp = Dispatcher(storage=storage)
+    dp = Dispatcher(
+        storage=MemoryStorage()
+    )
 
-    # Подключение роутеров
     for router in routers:
         dp.include_router(router)
 
-    print("CONNECTED ROUTERS:", routers)
-
-    # База данных
-    from bot.database.base import engine, async_session
-    from bot.database.models import Base
-
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+        await conn.run_sync(
+            Base.metadata.create_all
+        )
 
-    # Первичная инициализация
     async with async_session() as session:
         await seed_categories(session)
-        #await seed_products(session)
+        await seed_products(session)
 
     print("Бот запущен с базой данных!")
 
