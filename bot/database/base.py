@@ -1,4 +1,3 @@
-from pathlib import Path
 import os
 
 from dotenv import load_dotenv
@@ -14,18 +13,16 @@ from sqlalchemy.orm import DeclarativeBase
 load_dotenv()
 
 
-BASE_DIR = Path(__file__).resolve().parents[2]
-
-DB_PATH = BASE_DIR / "shop.db"
-
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    f"sqlite+aiosqlite:///{DB_PATH}"
+    "sqlite+aiosqlite:///shop.db"
 )
 
 
-# Railway PostgreSQL fix
+
+# Railway PostgreSQL compatibility
+
 if DATABASE_URL.startswith(
     "postgres://"
 ):
@@ -55,6 +52,7 @@ engine = create_async_engine(
 )
 
 
+
 async_session = async_sessionmaker(
     engine,
     expire_on_commit=False,
@@ -63,4 +61,5 @@ async_session = async_sessionmaker(
 
 
 class Base(DeclarativeBase):
+
     pass
