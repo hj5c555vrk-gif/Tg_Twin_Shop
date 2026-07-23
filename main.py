@@ -10,7 +10,6 @@ from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 
 from bot.handlers import routers
-from bot.database.base import engine, async_session
 from bot.database.seed_categories import seed_categories
 from bot.database.seed_products import seed_products
 
