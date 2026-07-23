@@ -10,6 +10,9 @@ from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 
 from bot.handlers import routers
+
+from bot.database.base import async_session
+
 from bot.database.seed_categories import seed_categories
 from bot.database.seed_products import seed_products
 
@@ -46,9 +49,8 @@ async def main():
         dp.include_router(router)
 
 
-    # Временный seed данных
-    # после подключения Alembic
-    # перенесем отдельно
+    # Временное заполнение базы
+    # после проверки PostgreSQL можно вынести отдельно
 
     async with async_session() as session:
 
