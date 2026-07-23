@@ -714,3 +714,427 @@ async def save_description(
     await message.answer(
         "✅ Описание обновлено."
     )
+    
+# ==========================================================
+# ПРОВЕРКА ДОСТУПА ДЛЯ РЕДАКТИРОВАНИЯ
+# ==========================================================
+
+def admin_only(callback: CallbackQuery) -> bool:
+    return is_admin(callback.from_user.id)
+
+
+
+# ==========================================================
+# ДОБАВЛЕНИЕ КНОПОК РЕДАКТИРОВАНИЯ ТОВАРА
+# ==========================================================
+
+@admin_router.callback_query(
+    F.data.startswith("edit_")
+)
+async def edit_product(
+    callback: CallbackQuery
+):
+
+    if not admin_only(callback):
+        await callback.answer(
+            "Нет доступа",
+            show_alert=True
+        )
+        return
+
+
+    product_id = int(
+        callback.data.split("_")[1]
+    )
+
+
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+
+            [
+                InlineKeyboardButton(
+                    text="💰 Изменить цену",
+                    callback_data=f"price_{product_id}"
+                )
+            ],
+
+            [
+                InlineKeyboardButton(
+                    text="📦 Изменить остаток",
+                    callback_data=f"stock_{product_id}"
+                )
+            ],
+
+            [
+                InlineKeyboardButton(
+                    text="✏️ Название",
+                    callback_data=f"rename_{product_id}"
+                )
+            ],
+
+            [
+                InlineKeyboardButton(
+                    text="📝 Описание",
+                    callback_data=f"description_{product_id}"
+                )
+            ],
+
+            [
+                InlineKeyboardButton(
+                    text="🗑 Удалить",
+                    callback_data=f"delete_{product_id}"
+                )
+            ],
+
+            [
+                InlineKeyboardButton(
+                    text="◀️ Назад",
+                    callback_data="products_list"
+                )
+            ]
+        ]
+    )
+
+
+    await callback.answer()
+
+    await callback.message.edit_text(
+        "<b>✏️ Редактирование товара</b>\n\n"
+        "Выберите действие:",
+        parse_mode="HTML",
+        reply_markup=keyboard
+    )
+
+
+
+# ==========================================================
+# УДАЛЕНИЕ ТОВАРА
+# ==========================================================
+
+@admin_router.callback_query(
+    F.data.startswith("delete_")
+)
+async def delete_product_handler(
+    callback: CallbackQuery
+):
+
+    if not admin_only(callback):
+        return
+
+
+    product_id = int(
+        callback.data.split("_")[1]
+    )
+
+
+    async with async_session() as session:
+
+        result = await delete_product(
+            session,
+            product_id
+        )
+
+
+    if result:
+
+        await callback.answer(
+            "Товар удалён"
+        )
+
+    else:
+
+        await callback.answer(
+            "Товар не найден",
+            show_alert=True
+        )
+
+
+    await products_list(callback)
+
+
+
+# ==========================================================
+# ИЗМЕНЕНИЕ ОСТАТКА
+# ==========================================================
+
+@admin_router.callback_query(
+    F.data.startswith("stock_")
+)
+async def edit_stock(
+    callback: CallbackQuery,
+    state: FSMContext
+):
+
+    product_id = int(
+        callback.data.split("_")[1]
+    )
+
+
+    await state.update_data(
+        product_id=product_id
+    )
+
+
+    await callback.answer()
+
+
+    await callback.message.answer(
+        "Введите новый остаток:"
+    )
+
+
+    await state.set_state(
+        AddProductStates.edit_stock
+    )
+
+
+
+@admin_router.message(
+    AddProductStates.edit_stock
+)
+async def save_stock(
+    message: Message,
+    state: FSMContext
+):
+
+    try:
+
+        stock = int(message.text)
+
+    except ValueError:
+
+        await message.answer(
+            "Введите число."
+        )
+
+        return
+
+
+    data = await state.get_data()
+
+
+    async with async_session() as session:
+
+        await update_stock(
+            session,
+            data["product_id"],
+            stock
+        )
+
+
+    await state.clear()
+
+
+    await message.answer(
+        "✅ Остаток изменён"
+    )
+
+
+
+# ==========================================================
+# ИЗМЕНЕНИЕ ЦЕНЫ
+# ==========================================================
+
+@admin_router.callback_query(
+    F.data.startswith("price_")
+)
+async def edit_price(
+    callback: CallbackQuery,
+    state: FSMContext
+):
+
+    product_id = int(
+        callback.data.split("_")[1]
+    )
+
+
+    await state.update_data(
+        product_id=product_id
+    )
+
+
+    await callback.answer()
+
+
+    await callback.message.answer(
+        "Введите новую цену:"
+    )
+
+
+    await state.set_state(
+        AddProductStates.edit_price
+    )
+
+
+
+@admin_router.message(
+    AddProductStates.edit_price
+)
+async def save_price(
+    message: Message,
+    state: FSMContext
+):
+
+    try:
+
+        price = float(
+            message.text.replace(",", ".")
+        )
+
+    except ValueError:
+
+        await message.answer(
+            "Некорректная цена."
+        )
+
+        return
+
+
+    data = await state.get_data()
+
+
+    async with async_session() as session:
+
+        await update_product_price(
+            session,
+            data["product_id"],
+            price
+        )
+
+
+    await state.clear()
+
+
+    await message.answer(
+        "✅ Цена обновлена"
+    )
+
+
+
+# ==========================================================
+# ИЗМЕНЕНИЕ НАЗВАНИЯ
+# ==========================================================
+
+@admin_router.callback_query(
+    F.data.startswith("rename_")
+)
+async def rename_product(
+    callback: CallbackQuery,
+    state: FSMContext
+):
+
+    product_id = int(
+        callback.data.split("_")[1]
+    )
+
+
+    await state.update_data(
+        product_id=product_id
+    )
+
+
+    await callback.answer()
+
+
+    await callback.message.answer(
+        "Введите новое название:"
+    )
+
+
+    await state.set_state(
+        AddProductStates.edit_name
+    )
+
+
+
+@admin_router.message(
+    AddProductStates.edit_name
+)
+async def save_name(
+    message: Message,
+    state: FSMContext
+):
+
+    data = await state.get_data()
+
+
+    async with async_session() as session:
+
+        await update_product_name(
+            session,
+            data["product_id"],
+            message.text
+        )
+
+
+    await state.clear()
+
+
+    await message.answer(
+        "✅ Название изменено"
+    )
+
+
+
+# ==========================================================
+# ИЗМЕНЕНИЕ ОПИСАНИЯ
+# ==========================================================
+
+@admin_router.callback_query(
+    F.data.startswith("description_")
+)
+async def edit_description(
+    callback: CallbackQuery,
+    state: FSMContext
+):
+
+    product_id = int(
+        callback.data.split("_")[1]
+    )
+
+
+    await state.update_data(
+        product_id=product_id
+    )
+
+
+    await callback.answer()
+
+
+    await callback.message.answer(
+        "Введите новое описание:"
+    )
+
+
+    await state.set_state(
+        AddProductStates.edit_description
+    )
+
+
+
+@admin_router.message(
+    AddProductStates.edit_description
+)
+async def save_description(
+    message: Message,
+    state: FSMContext
+):
+
+    data = await state.get_data()
+
+
+    async with async_session() as session:
+
+        await update_product_description(
+            session,
+            data["product_id"],
+            message.text
+        )
+
+
+    await state.clear()
+
+
+    await message.answer(
+        "✅ Описание обновлено"
+    )
