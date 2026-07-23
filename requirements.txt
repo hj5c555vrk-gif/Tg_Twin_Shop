@@ -1,4 +1,9 @@
 aiogram==3.13.0
-aiosqlite
+
 sqlalchemy
+asyncpg
+alembic
+
+aiosqlite
+
 python-dotenv
