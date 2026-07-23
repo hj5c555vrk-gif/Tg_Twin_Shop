@@ -1,16 +1,19 @@
 from logging.config import fileConfig
 
+import asyncio
 import os
 import sys
 
 from dotenv import load_dotenv
 
-from sqlalchemy.ext.asyncio import async_engine_from_config
 from sqlalchemy import pool
+from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 
+
 load_dotenv()
+
 
 sys.path.append(
     os.path.abspath(
@@ -21,18 +24,24 @@ sys.path.append(
     )
 )
 
-# Alembic Config
+
 config = context.config
 
-# DATABASE_URL из .env
-database_url = os.getenv("DATABASE_URL")
+
+database_url = os.getenv(
+    "DATABASE_URL"
+)
+
 
 if database_url:
 
-    if database_url.startswith("postgres://"):
+    if database_url.startswith(
+        "postgresql://"
+    ):
+
         database_url = database_url.replace(
-            "postgres://",
             "postgresql://",
+            "postgresql+asyncpg://",
             1
         )
 
@@ -41,14 +50,19 @@ if database_url:
         database_url
     )
 
-# Логирование
-if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
 
-# Модели
+if config.config_file_name is not None:
+
+    fileConfig(
+        config.config_file_name
+    )
+
+
 from bot.database.models import Base
 
+
 target_metadata = Base.metadata
+
 
 
 def run_migrations_offline() -> None:
@@ -67,35 +81,53 @@ def run_migrations_offline() -> None:
     )
 
     with context.begin_transaction():
+
         context.run_migrations()
 
-
-import asyncio
 
 
 async def run_async_migrations():
 
     connectable = async_engine_from_config(
-        config.get_section(config.config_ini_section),
+
+        config.get_section(
+            config.config_ini_section
+        ),
+
         prefix="sqlalchemy.",
+
         poolclass=pool.NullPool,
+
     )
+
 
     async with connectable.connect() as connection:
 
-        await connection.run_sync(
-            lambda sync_connection:
-            context.configure(
-                connection=sync_connection,
-                target_metadata=target_metadata
-            )
-        )
 
         await connection.run_sync(
-            context.run_migrations
+
+            lambda sync_connection:
+
+            context.configure(
+
+                connection=sync_connection,
+
+                target_metadata=target_metadata,
+
+            )
+
         )
+
+
+        await connection.run_sync(
+
+            context.run_migrations
+
+        )
+
 
     await connectable.dispose()
+
 
 
 def run_migrations_online() -> None:
@@ -103,6 +135,8 @@ def run_migrations_online() -> None:
     asyncio.run(
         run_async_migrations()
     )
+
+
 
 if context.is_offline_mode():
 
