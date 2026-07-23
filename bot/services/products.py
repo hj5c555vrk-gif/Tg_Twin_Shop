@@ -12,11 +12,6 @@ async def get_products_by_category(
     category_id: int
 ):
 
-    print(
-        "SEARCH CATEGORY:",
-        category_id
-    )
-
     result = await session.execute(
         select(Product)
         .where(
@@ -27,23 +22,7 @@ async def get_products_by_category(
         )
     )
 
-    products = result.scalars().all()
-
-    print(
-        "FOUND PRODUCTS:",
-        len(products)
-    )
-
-    for product in products:
-        print(
-            product.id,
-            product.name,
-            product.category_id,
-            product.available
-        )
-
-    return products
-
+    return result.scalars().all()
 
 
 async def create_product(
@@ -64,10 +43,8 @@ async def create_product(
 
     category = category_result.scalar_one_or_none()
 
-
     if category is None:
         return None
-
 
     product = Product(
 
@@ -85,7 +62,6 @@ async def create_product(
 
     )
 
-
     try:
 
         session.add(product)
@@ -96,13 +72,11 @@ async def create_product(
 
         return product
 
-
     except Exception:
 
         await session.rollback()
 
         raise
-
 
 
 async def get_all_products(
@@ -121,7 +95,6 @@ async def get_all_products(
     return result.scalars().all()
 
 
-
 async def get_product_by_id(
     session: AsyncSession,
     product_id: int
@@ -136,9 +109,7 @@ async def get_product_by_id(
 
     )
 
-
     return result.scalar_one_or_none()
-
 
 
 async def update_product_name(
@@ -152,13 +123,10 @@ async def update_product_name(
         product_id
     )
 
-
     if product is None:
         return None
 
-
     product.name = name
-
 
     try:
 
@@ -168,13 +136,11 @@ async def update_product_name(
 
         return product
 
-
     except Exception:
 
         await session.rollback()
 
         raise
-
 
 
 async def update_product_description(
@@ -188,13 +154,10 @@ async def update_product_description(
         product_id
     )
 
-
     if product is None:
         return None
 
-
     product.description = description
-
 
     try:
 
@@ -204,13 +167,11 @@ async def update_product_description(
 
         return product
 
-
     except Exception:
 
         await session.rollback()
 
         raise
-
 
 
 async def update_product_price(
@@ -224,13 +185,10 @@ async def update_product_price(
         product_id
     )
 
-
     if product is None:
         return None
 
-
     product.price = price
-
 
     try:
 
@@ -240,13 +198,11 @@ async def update_product_price(
 
         return product
 
-
     except Exception:
 
         await session.rollback()
 
         raise
-
 
 
 async def update_stock(
@@ -260,15 +216,11 @@ async def update_stock(
         product_id
     )
 
-
     if product is None:
         return None
 
-
     product.stock = stock
-
     product.available = stock > 0
-
 
     try:
 
@@ -278,13 +230,11 @@ async def update_stock(
 
         return product
 
-
     except Exception:
 
         await session.rollback()
 
         raise
-
 
 
 async def update_product_stock(
@@ -300,7 +250,6 @@ async def update_product_stock(
     )
 
 
-
 async def delete_product(
     session: AsyncSession,
     product_id: int
@@ -311,10 +260,8 @@ async def delete_product(
         product_id
     )
 
-
     if product is None:
         return False
-
 
     try:
 
@@ -324,13 +271,11 @@ async def delete_product(
 
         return True
 
-
     except Exception:
 
         await session.rollback()
 
         raise
-
 
 
 async def set_product_available(
@@ -344,13 +289,10 @@ async def set_product_available(
         product_id
     )
 
-
     if product is None:
         return None
 
-
     product.available = available
-
 
     try:
 
@@ -360,13 +302,11 @@ async def set_product_available(
 
         return product
 
-
     except Exception:
 
         await session.rollback()
 
         raise
-
 
 
 async def search_products(
@@ -386,118 +326,3 @@ async def search_products(
     )
 
     return result.scalars().all()
-    all_products_result = await session.execute(
-    select(Product)
-)
-
-async def get_products_by_category(
-    session: AsyncSession,
-    category_id: int
-):
-
-    print(
-        "SEARCH CATEGORY:",
-        category_id
-    )
-
-
-    result = await session.execute(
-        select(Product)
-        .where(
-            Product.category_id == category_id
-        )
-        .order_by(
-            Product.id
-        )
-    )
-
-
-    products = result.scalars().all()
-
-
-    print(
-        "FOUND PRODUCTS IN CATEGORY:",
-        len(products)
-    )
-
-
-    for product in products:
-
-        print(
-            "CATEGORY PRODUCT:",
-            "ID:",
-            product.id,
-            "NAME:",
-            product.name,
-            "CATEGORY_ID:",
-            product.category_id,
-            "AVAILABLE:",
-            product.available
-        )
-
-
-    # ==============================
-    # ДИАГНОСТИКА ВСЕХ ТОВАРОВ
-    # ==============================
-
-    all_products_result = await session.execute(
-        select(Product)
-        .order_by(
-            Product.id
-        )
-    )
-
-
-    all_products = all_products_result.scalars().all()
-
-
-    print(
-        "===== ВСЕ ТОВАРЫ В БАЗЕ ====="
-    )
-
-
-    for product in all_products:
-
-        print(
-            "ID:",
-            product.id,
-            "| NAME:",
-            product.name,
-            "| CATEGORY_ID:",
-            product.category_id,
-            "| AVAILABLE:",
-            product.available
-        )
-
-
-    # ==============================
-    # ДИАГНОСТИКА ВСЕХ КАТЕГОРИЙ
-    # ==============================
-
-    categories_result = await session.execute(
-        select(Category)
-        .order_by(
-            Category.id
-        )
-    )
-
-
-    categories = categories_result.scalars().all()
-
-
-    print(
-        "===== ВСЕ КАТЕГОРИИ В БАЗЕ ====="
-    )
-
-
-    for category in categories:
-
-        print(
-            "ID:",
-            category.id,
-            "| NAME:",
-            category.name
-        )
-
-
-    return products
