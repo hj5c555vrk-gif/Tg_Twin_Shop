@@ -12,7 +12,14 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 
 
-load_dotenv()
+load_dotenv(
+    os.path.join(
+        os.path.dirname(__file__),
+        "..",
+        ".env"
+    ),
+    override=True
+)
 
 
 sys.path.append(

@@ -11,7 +11,9 @@ from sqlalchemy.ext.asyncio import (
 from sqlalchemy.orm import DeclarativeBase
 
 
-load_dotenv()
+load_dotenv(
+    override=True
+)
 
 
 BASE_DIR = Path(__file__).resolve().parents[2]
