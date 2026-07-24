@@ -5,11 +5,11 @@ start_keyboard = InlineKeyboardMarkup(
     inline_keyboard=[
         [
             InlineKeyboardButton(
-                text="📋 Открыть меню",
+                text="🗂️ Открыть меню",
                 callback_data="user_menu"
             ),
             InlineKeyboardButton(
-                text="👤 Профиль",
+                text="🧟‍♂️ Профиль",
                 callback_data="profile"
             )
         ]
@@ -22,7 +22,7 @@ user_menu_keyboard = InlineKeyboardMarkup(
 
         [
             InlineKeyboardButton(
-                text="📦 Каталог",
+                text="📖 Каталог",
                 callback_data="catalog"
             )
         ],
@@ -37,7 +37,7 @@ user_menu_keyboard = InlineKeyboardMarkup(
 
         [
             InlineKeyboardButton(
-                text="👤 Профиль",
+                text="🧟‍♂️ Профиль",
                 callback_data="profile"
             )
         ],
