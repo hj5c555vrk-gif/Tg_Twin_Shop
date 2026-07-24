@@ -459,33 +459,75 @@ async def edit_product(callback: CallbackQuery):
 # УДАЛЕНИЕ
 # ==========================================================
 
+@admin_router.callback_query(F.data == "delete_product")
+async def delete_product_menu(callback: CallbackQuery):
+
+    if not is_admin(callback.from_user.id):
+        await callback.answer("Нет доступа", show_alert=True)
+        return
+
+    async with async_session() as session:
+        products = await get_all_products(session)
+
+    await callback.answer()
+
+    keyboard_rows = []
+
+    if products:
+        for product in products:
+            keyboard_rows.append(
+                [
+                    InlineKeyboardButton(
+                        text=f"🗑 {product.name}",
+                        callback_data=f"delete_{product.id}",
+                    )
+                ]
+            )
+
+    keyboard_rows.append(
+        [
+            InlineKeyboardButton(
+                text="◀️ Назад",
+                callback_data="admin_products",
+            )
+        ]
+    )
+
+    await callback.message.edit_text(
+        text="<b>🗑 Удаление товара</b>\n\n"
+        "Выберите товар для удаления:",
+        parse_mode="HTML",
+        reply_markup=InlineKeyboardMarkup(inline_keyboard=keyboard_rows),
+    )
+
+
 @admin_router.callback_query(F.data.startswith("delete_"))
 async def delete_product_handler(callback: CallbackQuery):
 
     if not is_admin(callback.from_user.id):
+        await callback.answer("Нет доступа", show_alert=True)
         return
 
+    if callback.data == "delete_product":
+        await delete_product_menu(callback)
+        return
 
     product_id = int(
         callback.data.split("_")[1]
     )
 
-
     async with async_session() as session:
-
-        await delete_product(
+        result = await delete_product(
             session,
             product_id,
         )
 
+    if result:
+        await callback.answer("Товар удалён")
+    else:
+        await callback.answer("Товар не найден", show_alert=True)
 
-    await callback.answer(
-        "Удалено."
-    )
-
-
-    await products_list(callback)
-
+    await delete_product_menu(callback)
 
 
 # ==========================================================
@@ -864,35 +906,31 @@ async def delete_product_handler(
     if not admin_only(callback):
         return
 
+    if callback.data == "delete_product":
+        await delete_product_menu(callback)
+        return
 
     product_id = int(
         callback.data.split("_")[1]
     )
 
-
     async with async_session() as session:
-
         result = await delete_product(
             session,
             product_id
         )
 
-
     if result:
-
         await callback.answer(
             "Товар удалён"
         )
-
     else:
-
         await callback.answer(
             "Товар не найден",
             show_alert=True
         )
 
-
-    await products_list(callback)
+    await delete_product_menu(callback)
 
 
 
