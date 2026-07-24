@@ -1,7 +1,7 @@
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from bot.database.models import User
+from bot.database.models import Cart, Category, User, UserCategoryClick
 
 
 async def get_or_create_user(
@@ -47,6 +47,71 @@ async def get_or_create_user(
     await session.commit()
 
     return user
+
+
+async def increase_user_category_click(
+    session: AsyncSession,
+    user_id: int,
+    category_id: int,
+):
+    result = await session.execute(
+        select(UserCategoryClick).where(
+            UserCategoryClick.user_id == user_id,
+            UserCategoryClick.category_id == category_id,
+        )
+    )
+
+    click = result.scalar_one_or_none()
+
+    if click is None:
+        click = UserCategoryClick(
+            user_id=user_id,
+            category_id=category_id,
+            clicks=1,
+        )
+        session.add(click)
+    else:
+        click.clicks += 1
+
+    await session.commit()
+
+
+async def get_user_profile(session: AsyncSession, telegram_id: int):
+    result = await session.execute(
+        select(User).where(User.telegram_id == telegram_id)
+    )
+    user = result.scalar_one_or_none()
+
+    if user is None:
+        return {
+            "registered_at": "—",
+            "order_count": 0,
+            "favorite_categories": ["Пока нет данных"],
+        }
+
+    order_count_result = await session.execute(
+        select(func.count(Cart.id)).where(Cart.user_id == user.id)
+    )
+    order_count = order_count_result.scalar() or 0
+
+    favorite_categories_result = await session.execute(
+        select(Category.name)
+        .join(UserCategoryClick.category)
+        .where(UserCategoryClick.user_id == user.id)
+        .group_by(Category.id, Category.name)
+        .order_by(func.sum(UserCategoryClick.clicks).desc(), Category.name.asc())
+        .limit(3)
+    )
+
+    favorite_categories = [
+        category_name for (category_name,) in favorite_categories_result.all()
+    ] or ["Пока нет данных"]
+
+    return {
+        "registered_at": user.created_at.strftime("%d.%m.%Y") if user.created_at else "—",
+        "order_count": order_count,
+        "favorite_categories": favorite_categories,
+    }
 
 
 async def get_user_logs(session: AsyncSession):

@@ -240,6 +240,60 @@ class User(Base):
         cascade="all, delete-orphan"
     )
 
+    category_clicks = relationship(
+        "UserCategoryClick",
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )
+
+
+# ==================================================
+# КЛИКИ ПОЛЬЗОВАТЕЛЯ ПО КАТЕГОРИЯМ
+# ==================================================
+
+class UserCategoryClick(Base):
+
+    __tablename__ = "user_category_clicks"
+
+    id = Column(
+        Integer,
+        primary_key=True
+    )
+
+    user_id = Column(
+        Integer,
+        ForeignKey(
+            "users.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    category_id = Column(
+        Integer,
+        ForeignKey(
+            "categories.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    clicks = Column(
+        Integer,
+        default=0,
+        nullable=False
+    )
+
+    user = relationship(
+        "User",
+        back_populates="category_clicks"
+    )
+
+    category = relationship(
+        "Category"
+    )
 
 
 # ==================================================

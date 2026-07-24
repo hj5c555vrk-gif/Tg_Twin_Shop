@@ -7,6 +7,10 @@ start_keyboard = InlineKeyboardMarkup(
             InlineKeyboardButton(
                 text="📋 Открыть меню",
                 callback_data="user_menu"
+            ),
+            InlineKeyboardButton(
+                text="👤 Профиль",
+                callback_data="profile"
             )
         ]
     ]
@@ -39,10 +43,38 @@ user_menu_keyboard = InlineKeyboardMarkup(
 
         [
             InlineKeyboardButton(
+                text="👤 Профиль",
+                callback_data="profile"
+            )
+        ],
+
+        [
+            InlineKeyboardButton(
                 text="ℹ️ Информация",
                 callback_data="info"
             )
         ]
 
+    ]
+)
+
+profile_keyboard = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [
+            InlineKeyboardButton(
+                text="🔗 Реферальная ссылка",
+                callback_data="profile_referral"
+            ),
+            InlineKeyboardButton(
+                text="🏅 Уровень",
+                callback_data="profile_level"
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                text="◀️ Назад",
+                callback_data="user_menu"
+            )
+        ]
     ]
 )

@@ -12,6 +12,7 @@ from bot.database.base import async_session
 from bot.services.catalog import get_categories
 from bot.services.products import get_products_by_category
 from bot.services.category_views import increase_category_view
+from bot.services.user import get_or_create_user, increase_user_category_click
 
 from bot.keyboards.catalog_key import catalog_keyboard
 from bot.keyboards.product_key import products_keyboard
@@ -122,9 +123,22 @@ async def open_category(
 
     async with async_session() as session:
 
+        user = await get_or_create_user(
+            session,
+            callback.from_user.id,
+            callback.from_user.username,
+            callback.from_user.first_name,
+        )
+
         await increase_category_view(
             session,
             category_id
+        )
+
+        await increase_user_category_click(
+            session,
+            user.id,
+            category_id,
         )
 
         products = await get_products_by_category(
