@@ -36,6 +36,16 @@ database_url = os.getenv(
 if database_url:
 
     if database_url.startswith(
+        "postgres://"
+    ):
+
+        database_url = database_url.replace(
+            "postgres://",
+            "postgresql+asyncpg://",
+            1
+        )
+
+    elif database_url.startswith(
         "postgresql://"
     ):
 
@@ -64,7 +74,6 @@ from bot.database.models import Base
 target_metadata = Base.metadata
 
 
-
 def run_migrations_offline() -> None:
 
     url = config.get_main_option(
@@ -85,6 +94,24 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 
+def do_run_migrations(connection):
+
+    context.configure(
+
+        connection=connection,
+
+        target_metadata=target_metadata,
+
+        compare_type=True,
+
+        compare_server_default=True,
+
+    )
+
+    with context.begin_transaction():
+
+        context.run_migrations()
+
 
 async def run_async_migrations():
 
@@ -104,33 +131,11 @@ async def run_async_migrations():
 
     async with connectable.connect() as connection:
 
-
         await connection.run_sync(
-
-            lambda sync_connection:
-
-            context.configure(
-
-                connection=sync_connection,
-
-                target_metadata=target_metadata,
-
-            )
-
+            do_run_migrations
         )
-
-
-        await connection.run_sync(
-
-            lambda sync_connection:
-
-            context.run_migrations()
-
-        )
-
 
     await connectable.dispose()
-
 
 
 def run_migrations_online() -> None:
@@ -138,7 +143,6 @@ def run_migrations_online() -> None:
     asyncio.run(
         run_async_migrations()
     )
-
 
 
 if context.is_offline_mode():
