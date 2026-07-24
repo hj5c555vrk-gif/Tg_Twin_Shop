@@ -13,6 +13,7 @@ from sqlalchemy import select
 from bot.database.admin import ADMIN_ID
 from bot.database.base import async_session
 from bot.database.models import Category
+from bot.services.user import get_user_logs
 
 from bot.keyboards.admin_key import (
     admin_keyboard,
@@ -73,6 +74,48 @@ async def back_to_admin(callback: CallbackQuery):
         "Выберите раздел.",
         parse_mode="HTML",
         reply_markup=admin_keyboard,
+    )
+
+
+# ==========================================================
+# ПОЛЬЗОВАТЕЛИ
+# ==========================================================
+
+@admin_router.callback_query(F.data == "admin_users")
+async def admin_users(callback: CallbackQuery):
+
+    if not is_admin(callback.from_user.id):
+        await callback.answer("Нет доступа", show_alert=True)
+        return
+
+    async with async_session() as session:
+        users = await get_user_logs(session)
+
+    if not users:
+        text = "<b>👥 Пользователи</b>\n\nПока нет зарегистрированных пользователей."
+    else:
+        preview = users[:20]
+        lines = ["<b>👥 Пользователи</b>", ""]
+
+        for index, user in enumerate(preview, 1):
+            lines.append(
+                f"{index}. ID: {user['telegram_id']}\n"
+                f"   @: {user['username']}\n"
+                f"   Имя: {user['first_name']}\n"
+                f"   Регистрация: {user['created_at']}"
+            )
+
+        if len(users) > len(preview):
+            lines.append(f"\n... и еще {len(users) - len(preview)} пользователей")
+
+        text = "\n\n".join(lines)
+
+    await callback.answer()
+
+    await callback.message.edit_text(
+        text,
+        parse_mode="HTML",
+        reply_markup=back_to_admin_keyboard,
     )
 
 

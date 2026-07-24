@@ -16,6 +16,7 @@ from aiogram.fsm.storage.memory import MemoryStorage
 
 from bot.handlers import routers
 from bot.database.base import Base, engine, async_session
+from bot.database.models import Category, Product
 from bot.database.seed_categories import seed_categories
 from bot.database.seed_products import seed_products
 
@@ -77,6 +78,65 @@ async def ensure_database_ready() -> None:
         logging.info("Миграции базы данных применены успешно.")
 
 
+async def seed_products_fallback(session):
+    fallback_products = [
+        {
+            "name": "Base Juice 60ml",
+            "description": "Базовый вкус для старта",
+            "price": "9.99",
+            "image": None,
+            "category": "🧃 Жидкости",
+        },
+        {
+            "name": "Mesh Coil 0.2",
+            "description": "Надежный испаритель",
+            "price": "4.50",
+            "image": None,
+            "category": "⚙️ Испарители",
+        },
+        {
+            "name": "Снюс Лимон",
+            "description": "Популярный снюс",
+            "price": "3.99",
+            "image": None,
+            "category": "🧜🏼‍♂️ Снюс",
+        },
+    ]
+
+    for item in fallback_products:
+        category_result = await session.execute(
+            select(Category).where(Category.name == item["category"])
+        )
+        category = category_result.scalar_one_or_none()
+
+        if category is None:
+            continue
+
+        existing_result = await session.execute(
+            select(Product).where(
+                Product.name == item["name"],
+                Product.category_id == category.id,
+            )
+        )
+
+        if existing_result.scalar_one_or_none():
+            continue
+
+        session.add(
+            Product(
+                name=item["name"],
+                description=item["description"],
+                price=item["price"],
+                image=item["image"],
+                category_id=category.id,
+                stock=0,
+                available=True,
+            )
+        )
+
+    await session.commit()
+
+
 async def main():
 
     bot = Bot(
@@ -102,17 +162,25 @@ async def main():
     # после подключения Alembic
     # перенесем отдельно
 
-    async with async_session() as session:
+    try:
+        async with async_session() as session:
+            await seed_categories(session)
+            try:
+                await seed_products(session)
+            except Exception:
+                logging.exception(
+                    "Не удалось выполнить seed товаров через основной обработчик, пробую fallback."
+                )
+                await seed_products_fallback(session)
+    except Exception:
+        logging.exception(
+            "Не удалось выполнить начальное заполнение данных, бот будет запущен без seed-данных."
+        )
 
-        await seed_categories(session)
 
-        await seed_products(session)
-
-
-    print(
-        "Бот запущен!"
-    )
-
+    startup_message = "Бот запущен и готов принимать обновления."
+    print(startup_message)
+    logging.info(startup_message)
 
     await dp.start_polling(
         bot

@@ -5,10 +5,40 @@ from bot.database.models import (
     Product,
 )
 
+
+DEFAULT_PRODUCTS = [
+    {
+        "name": "Base Juice 60ml",
+        "description": "Базовый вкус для старта",
+        "price": "9.99",
+        "image": None,
+        "category": "🧃 Жидкости",
+    },
+    {
+        "name": "Mesh Coil 0.2",
+        "description": "Надежный испаритель",
+        "price": "4.50",
+        "image": None,
+        "category": "⚙️ Испарители",
+    },
+    {
+        "name": "Снюс Лимон",
+        "description": "Популярный снюс",
+        "price": "3.99",
+        "image": None,
+        "category": "🧜🏼‍♂️ Снюс",
+    },
+]
+
+
 async def seed_products(session):
+    product_items = globals().get("PRODUCTS", DEFAULT_PRODUCTS)
 
-    for item in PRODUCTS:
+    if not product_items:
+        await session.commit()
+        return
 
+    for item in product_items:
         category_result = await session.execute(
             select(Category).where(
                 Category.name == item["category"]
@@ -38,7 +68,7 @@ async def seed_products(session):
                 image=item["image"],
                 category_id=category.id,
                 stock=0,
-                available=False,
+                available=True,
             )
         )
 

@@ -21,8 +21,20 @@ async def get_or_create_user(
     user = result.scalar()
 
     if user:
-        return user
+        changed = False
 
+        if username is not None and user.username != username:
+            user.username = username
+            changed = True
+
+        if first_name is not None and user.first_name != first_name:
+            user.first_name = first_name
+            changed = True
+
+        if changed:
+            await session.commit()
+
+        return user
 
     user = User(
         telegram_id=telegram_id,
@@ -35,3 +47,22 @@ async def get_or_create_user(
     await session.commit()
 
     return user
+
+
+async def get_user_logs(session: AsyncSession):
+    result = await session.execute(
+        select(User)
+        .order_by(User.created_at.asc(), User.telegram_id.asc())
+    )
+
+    users = result.scalars().all()
+
+    return [
+        {
+            "telegram_id": user.telegram_id,
+            "username": user.username or "—",
+            "first_name": user.first_name or "—",
+            "created_at": user.created_at.strftime("%d.%m.%Y %H:%M:%S") if user.created_at else "—",
+        }
+        for user in users
+    ]
