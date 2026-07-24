@@ -1,10 +1,11 @@
 from aiogram import Router, F
-from aiogram.types import CallbackQuery
+from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 
 from bot.database.admin import ADMIN_ID
 from bot.database.base import async_session
 from bot.keyboards.user_key import profile_keyboard, user_menu_keyboard
 from bot.keyboards.admin_key import admin_keyboard
+from bot.services.cart import clear_cart, get_cart_summary
 from bot.services.user import get_user_profile
 
 menu_router = Router()
@@ -59,3 +60,62 @@ async def profile_referral(callback: CallbackQuery):
 @menu_router.callback_query(F.data == "profile_level")
 async def profile_level(callback: CallbackQuery):
     await callback.answer("А тут и ничего и нет", show_alert=True)
+
+
+@menu_router.callback_query(F.data == "cart")
+async def show_cart(callback: CallbackQuery):
+    await callback.answer()
+
+    async with async_session() as session:
+        summary = await get_cart_summary(session, callback.from_user.id)
+
+    if not summary["items"]:
+        text = "🛒 Корзина пуста."
+    else:
+        lines = ["<b>🛒 Корзина</b>", ""]
+        for item in summary["items"]:
+            lines.append(
+                f"• {item['name']}\n"
+                f"  Кол-во: {item['quantity']}\n"
+                f"  Сумма: {item['line_total']:.2f} ₽"
+            )
+        lines.append("")
+        lines.append(f"🧾 Итого: {summary['total_price']:.2f} ₽")
+        lines.append(f"📦 Товаров: {summary['quantity_total']}")
+        text = "\n".join(lines)
+
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="🛍 Оформить заказ", callback_data="checkout"),
+            ],
+            [
+                InlineKeyboardButton(text="🧹 Очистить корзину", callback_data="clear_cart"),
+            ],
+            [
+                InlineKeyboardButton(text="◀️ Назад", callback_data="user_menu"),
+            ],
+        ]
+    )
+
+    await callback.message.edit_text(text, reply_markup=keyboard, parse_mode="HTML")
+
+
+@menu_router.callback_query(F.data == "clear_cart")
+async def clear_cart_handler(callback: CallbackQuery):
+    async with async_session() as session:
+        await clear_cart(session, callback.from_user.id)
+
+    await callback.answer("Корзина очищена")
+    await show_cart(callback)
+
+
+@menu_router.callback_query(F.data == "checkout")
+async def checkout_handler(callback: CallbackQuery):
+    await callback.answer("Заказ оформлен", show_alert=True)
+    await callback.message.edit_text(
+        "🛍 Заказ оформлен.\n\nКорзина будет очищена после подтверждения.",
+        reply_markup=InlineKeyboardMarkup(
+            inline_keyboard=[[InlineKeyboardButton(text="◀️ Назад", callback_data="user_menu")]]
+        ),
+    )
