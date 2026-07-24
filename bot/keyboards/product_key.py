@@ -19,7 +19,7 @@ def products_keyboard(products):
 
                 InlineKeyboardButton(
 
-                    text="Нет доступных товаров",
+                    text="Нет тут ничо",
 
                     callback_data="empty"
 
