@@ -34,12 +34,6 @@ user_menu_keyboard = InlineKeyboardMarkup(
             )
         ],
 
-        [
-            InlineKeyboardButton(
-                text="📦 Мои заказы",
-                callback_data="orders"
-            )
-        ],
 
         [
             InlineKeyboardButton(
