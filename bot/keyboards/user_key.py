@@ -48,13 +48,6 @@ user_menu_keyboard = InlineKeyboardMarkup(
             )
         ],
 
-        [
-            InlineKeyboardButton(
-                text="ℹ️ Информация",
-                callback_data="info"
-            )
-        ]
-
     ]
 )
 
