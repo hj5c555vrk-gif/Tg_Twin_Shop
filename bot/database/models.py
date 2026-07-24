@@ -240,6 +240,12 @@ class User(Base):
         cascade="all, delete-orphan"
     )
 
+    orders = relationship(
+        "Order",
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )
+
     category_clicks = relationship(
         "UserCategoryClick",
         back_populates="user",
@@ -388,6 +394,131 @@ class CartItem(Base):
         "Product"
     )
 
+
+class Order(Base):
+
+    __tablename__ = "orders"
+
+
+    id = Column(
+        Integer,
+        primary_key=True
+    )
+
+
+    user_id = Column(
+        Integer,
+        ForeignKey(
+            "users.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+
+    status = Column(
+        String(50),
+        nullable=False,
+        default="sent"
+    )
+
+
+    total_price = Column(
+        Numeric(10, 2),
+        nullable=False,
+        default=0.0
+    )
+
+
+    manager_comment = Column(
+        Text,
+        nullable=True
+    )
+
+
+    created_at = Column(
+        DateTime,
+        default=datetime.utcnow
+    )
+
+
+    updated_at = Column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow
+    )
+
+
+    user = relationship(
+        "User",
+        back_populates="orders"
+    )
+
+
+    items = relationship(
+        "OrderItem",
+        back_populates="order",
+        cascade="all, delete-orphan"
+    )
+
+
+class OrderItem(Base):
+
+    __tablename__ = "order_items"
+
+
+    id = Column(
+        Integer,
+        primary_key=True
+    )
+
+
+    order_id = Column(
+        Integer,
+        ForeignKey(
+            "orders.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+
+    product_id = Column(
+        Integer,
+        ForeignKey(
+            "products.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+
+    quantity = Column(
+        Integer,
+        default=1,
+        nullable=False
+    )
+
+
+    price = Column(
+        Numeric(10, 2),
+        nullable=False,
+        default=0.0
+    )
+
+
+    order = relationship(
+        "Order",
+        back_populates="items"
+    )
+
+
+    product = relationship(
+        "Product"
+    )
 
 
 # ==================================================

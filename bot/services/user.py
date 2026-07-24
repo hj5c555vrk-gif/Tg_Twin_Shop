@@ -1,7 +1,7 @@
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from bot.database.models import Cart, Category, User, UserCategoryClick
+from bot.database.models import Category, Order, User, UserCategoryClick
 
 
 async def get_or_create_user(
@@ -90,7 +90,7 @@ async def get_user_profile(session: AsyncSession, telegram_id: int):
         }
 
     order_count_result = await session.execute(
-        select(func.count(Cart.id)).where(Cart.user_id == user.id)
+        select(func.count(Order.id)).where(Order.user_id == user.id)
     )
     order_count = order_count_result.scalar() or 0
 

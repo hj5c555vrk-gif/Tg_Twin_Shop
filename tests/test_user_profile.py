@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
 from bot.database.base import Base
-from bot.database.models import Cart, Category, User
+from bot.database.models import Category, Order, User
 from bot.services.user import (
     get_or_create_user,
     get_user_profile,
@@ -39,7 +39,7 @@ class UserProfileTests(unittest.IsolatedAsyncioTestCase):
             await increase_user_category_click(session, user.id, first_category.id)
             await increase_user_category_click(session, user.id, second_category.id)
 
-            session.add(Cart(user_id=user.id))
+            session.add(Order(user_id=user.id, status="completed", total_price="1.00"))
             await session.commit()
 
             profile = await get_user_profile(session, user.telegram_id)

@@ -110,12 +110,3 @@ async def clear_cart_handler(callback: CallbackQuery):
     await show_cart(callback)
 
 
-@menu_router.callback_query(F.data == "checkout")
-async def checkout_handler(callback: CallbackQuery):
-    await callback.answer("Заказ оформлен", show_alert=True)
-    await callback.message.edit_text(
-        "🛍 Заказ оформлен.\n\nКорзина будет очищена после подтверждения.",
-        reply_markup=InlineKeyboardMarkup(
-            inline_keyboard=[[InlineKeyboardButton(text="◀️ Назад", callback_data="user_menu")]]
-        ),
-    )
