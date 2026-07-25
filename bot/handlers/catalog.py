@@ -62,11 +62,19 @@ async def open_catalog(target):
 
     elif isinstance(target, CallbackQuery):
 
-        await target.message.edit_text(
-            text,
-            reply_markup=keyboard,
-            parse_mode="HTML"
-        )
+        if target.message.photo:
+            await target.message.answer(
+                text,
+                reply_markup=keyboard,
+                parse_mode="HTML"
+            )
+            await target.message.delete()
+        else:
+            await target.message.edit_text(
+                text,
+                reply_markup=keyboard,
+                parse_mode="HTML"
+            )
 
 
 # ==================================================

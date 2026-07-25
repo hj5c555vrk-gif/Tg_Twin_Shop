@@ -19,6 +19,8 @@ from bot.keyboards.admin_key import (
     admin_keyboard,
     back_to_admin_keyboard,
     products_keyboard,
+    photo_management_keyboard,
+    get_photo_path_keyboard,
 )
 
 from bot.services.analytics import get_analytics
@@ -32,7 +34,13 @@ from bot.services.products import (
     update_product_description,
 )
 
-from bot.states.admin_states import AddProductStates, AddCategoryStates, EditCategoryStates
+from bot.services.photos import (
+    get_message_photo,
+    set_message_photo,
+    delete_message_photo,
+)
+
+from bot.states.admin_states import AddProductStates, AddCategoryStates, EditCategoryStates, EditPhotoStates
 
 admin_router = Router()
 is_admin = is_admin_user
@@ -1573,3 +1581,158 @@ async def admin_delete_cat_handler(callback: CallbackQuery, state: FSMContext):
             await callback.answer("Категория не найдена", show_alert=True)
 
     await admin_delete_categories(callback, state)
+
+
+# ==========================================================
+# УПРАВЛЕНИЕ ФОТОГРАФИЯМИ
+# ==========================================================
+
+@admin_router.callback_query(F.data == "admin_photos")
+async def admin_photos_menu(callback: CallbackQuery, state: FSMContext):
+
+    if not is_admin(callback.from_user.id):
+        await callback.answer("Нет доступа", show_alert=True)
+        return
+
+    await state.clear()
+    await callback.answer()
+
+    await callback.message.edit_text(
+        "<b>🖼 Управление фотографиями сообщений</b>\n\n"
+        "Вы можете привязать фотографии к основным разделам меню пользователя.\n"
+        "Выберите интересующий путь для настройки:",
+        parse_mode="HTML",
+        reply_markup=photo_management_keyboard
+    )
+
+
+@admin_router.callback_query(F.data.startswith("admin_photo_path_"))
+async def admin_photo_path(callback: CallbackQuery):
+
+    if not is_admin(callback.from_user.id):
+        await callback.answer("Нет доступа", show_alert=True)
+        return
+
+    path = callback.data.split("_")[3]  # admin_photo_path_start -> start
+    async with async_session() as session:
+        photo = await get_message_photo(session, path)
+
+    await callback.answer()
+
+    await callback.message.edit_text(
+        f"<b>🖼 Настройка фото для пути: {path}</b>\n\n"
+        f"Текущее фото (file_id или URL):\n<code>{photo}</code>\n\n"
+        f"Выберите действие:",
+        parse_mode="HTML",
+        reply_markup=get_photo_path_keyboard(path)
+    )
+
+
+@admin_router.callback_query(F.data.startswith("admin_delete_photo_"))
+async def admin_delete_photo(callback: CallbackQuery):
+
+    if not is_admin(callback.from_user.id):
+        await callback.answer("Нет доступа", show_alert=True)
+        return
+
+    path = callback.data.split("_")[3]
+    async with async_session() as session:
+        deleted = await delete_message_photo(session, path)
+
+    if deleted:
+        await callback.answer("Фотография сброшена до стандартной", show_alert=True)
+    else:
+        await callback.answer("Кастомная фотография не была установлена", show_alert=True)
+
+    # Refresh view
+    async with async_session() as session:
+        photo = await get_message_photo(session, path)
+
+    await callback.message.edit_text(
+        f"<b>🖼 Настройка фото для пути: {path}</b>\n\n"
+        f"Текущее фото (file_id или URL):\n<code>{photo}</code>\n\n"
+        f"Выберите действие:",
+        parse_mode="HTML",
+        reply_markup=get_photo_path_keyboard(path)
+    )
+
+
+@admin_router.callback_query(F.data.startswith("admin_replace_photo_"))
+async def admin_replace_photo(callback: CallbackQuery, state: FSMContext):
+
+    if not is_admin(callback.from_user.id):
+        await callback.answer("Нет доступа", show_alert=True)
+        return
+
+    path = callback.data.split("_")[3]
+    await state.clear()
+    await state.update_data(photo_path=path)
+    await state.set_state(EditPhotoStates.wait_for_photo)
+
+    await callback.answer()
+
+    back_k = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="◀️ Назад", callback_data=f"admin_photo_path_{path}")
+            ]
+        ]
+    )
+
+    await callback.message.edit_text(
+        f"📝 <b>Замена фото для пути: {path}</b>\n\n"
+        f"Отправьте новое фото (как изображение) или пришлите прямую ссылку на картинку (текстовым сообщением):",
+        parse_mode="HTML",
+        reply_markup=back_k
+    )
+
+
+@admin_router.message(EditPhotoStates.wait_for_photo)
+async def save_new_path_photo(message: Message, state: FSMContext):
+
+    if not is_admin(message.from_user.id):
+        return
+
+    data = await state.get_data()
+    path = data.get("photo_path")
+    if not path:
+        await state.clear()
+        await message.answer("❌ Произошла ошибка. Попробуйте заново.")
+        return
+
+    photo_id = None
+    if message.photo:
+        photo_id = message.photo[-1].file_id
+    elif message.text:
+        text = message.text.strip()
+        if text.startswith("http://") or text.startswith("https://"):
+            photo_id = text
+        else:
+            await message.answer(
+                "❌ Пожалуйста, отправьте изображение как фото или пришлите корректную ссылку на изображение (начинающуюся с http:// или https://)."
+            )
+            return
+    else:
+        await message.answer(
+            "❌ Пожалуйста, отправьте изображение как фото или пришлите корректную ссылку на изображение."
+        )
+        return
+
+    async with async_session() as session:
+        await set_message_photo(session, path, photo_id)
+
+    await state.clear()
+
+    back_k = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="◀️ Назад", callback_data="admin_photos")
+            ]
+        ]
+    )
+
+    await message.answer(
+        f"✅ Фотография для пути <b>{path}</b> успешно обновлена!",
+        parse_mode="HTML",
+        reply_markup=back_k
+    )

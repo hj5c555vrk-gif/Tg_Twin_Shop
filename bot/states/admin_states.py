@@ -38,3 +38,9 @@ class EditCategoryStates(StatesGroup):
     # Редактирование категории
     category_id = State()
     name = State()
+
+
+class EditPhotoStates(StatesGroup):
+
+    # Редактирование фотографий путей
+    wait_for_photo = State()

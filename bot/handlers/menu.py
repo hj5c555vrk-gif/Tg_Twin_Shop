@@ -1,6 +1,6 @@
 from aiogram import Router, F
 from aiogram.filters import Command
-from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
+from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message, InputMediaPhoto
 
 from bot.database.admin import ADMIN_ID, is_admin_user
 from bot.database.base import async_session
@@ -8,6 +8,7 @@ from bot.keyboards.user_key import profile_keyboard, user_menu_keyboard
 from bot.keyboards.admin_key import admin_keyboard
 from bot.services.cart import clear_cart, get_cart_summary
 from bot.services.user import get_user_profile
+from bot.services.photos import get_message_photo
 
 menu_router = Router()
 
@@ -20,8 +21,11 @@ def get_menu_markup(user_id: int) -> InlineKeyboardMarkup:
 
 @menu_router.message(Command("menu"))
 async def cmd_menu(message: Message):
-    await message.answer(
-        "📋 Главное меню\n\nВыберите необходимый раздел.",
+    async with async_session() as session:
+        photo = await get_message_photo(session, "menu")
+    await message.answer_photo(
+        photo=photo,
+        caption="📋 Главное меню\n\nВыберите необходимый раздел.",
         reply_markup=get_menu_markup(message.from_user.id),
     )
 
@@ -68,17 +72,29 @@ async def open_menu(callback: CallbackQuery):
 
     await callback.answer()
 
+    async with async_session() as session:
+        photo = await get_message_photo(session, "menu")
+
     if is_admin_user(callback.from_user.id):
-        await callback.message.edit_text(
-            "🛠 Главное меню администратора",
-            reply_markup=get_menu_markup(callback.from_user.id)
+        caption = "🛠 Главное меню администратора"
+    else:
+        caption = "📋 Главное меню\n\nВыберите необходимый раздел."
+
+    markup = get_menu_markup(callback.from_user.id)
+
+    if callback.message.photo:
+        await callback.message.edit_media(
+            media=InputMediaPhoto(media=photo, caption=caption, parse_mode="HTML"),
+            reply_markup=markup,
         )
     else:
-        await callback.message.edit_text(
-            "📋 Главное меню\n\n"
-            "Выберите необходимый раздел.",
-            reply_markup=get_menu_markup(callback.from_user.id)
+        await callback.message.answer_photo(
+            photo=photo,
+            caption=caption,
+            reply_markup=markup,
+            parse_mode="HTML"
         )
+        await callback.message.delete()
 
 
 @menu_router.callback_query(F.data == "profile")
@@ -87,17 +103,29 @@ async def open_profile(callback: CallbackQuery):
 
     async with async_session() as session:
         profile = await get_user_profile(session, callback.from_user.id)
+        photo = await get_message_photo(session, "profile")
 
     favorite_categories = ", ".join(profile["favorite_categories"])
-
-    await callback.message.edit_text(
+    caption = (
         "<b>👤 Профиль</b>\n\n"
         f"📅 Дата регистрации: {profile['registered_at']}\n"
         f"🛍 Количество заказов: {profile['order_count']}\n"
-        f"⭐ Любимые категории: {favorite_categories}",
-        reply_markup=profile_keyboard,
-        parse_mode="HTML",
+        f"⭐ Любимые категории: {favorite_categories}"
     )
+
+    if callback.message.photo:
+        await callback.message.edit_media(
+            media=InputMediaPhoto(media=photo, caption=caption, parse_mode="HTML"),
+            reply_markup=profile_keyboard,
+        )
+    else:
+        await callback.message.answer_photo(
+            photo=photo,
+            caption=caption,
+            reply_markup=profile_keyboard,
+            parse_mode="HTML"
+        )
+        await callback.message.delete()
 
 
 @menu_router.callback_query(F.data == "profile_referral")
@@ -146,7 +174,11 @@ async def show_cart(callback: CallbackQuery):
         ]
     )
 
-    await callback.message.edit_text(text, reply_markup=keyboard, parse_mode="HTML")
+    if callback.message.photo:
+        await callback.message.answer(text, reply_markup=keyboard, parse_mode="HTML")
+        await callback.message.delete()
+    else:
+        await callback.message.edit_text(text, reply_markup=keyboard, parse_mode="HTML")
 
 
 @menu_router.callback_query(F.data == "clear_cart")

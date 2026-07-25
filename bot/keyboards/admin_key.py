@@ -40,8 +40,68 @@ admin_keyboard = InlineKeyboardMarkup(
             ),
         ],
 
+        [
+            InlineKeyboardButton(
+                text="🖼 Фотографии",
+                callback_data="admin_photos"
+            )
+        ],
+
     ]
 )
+
+
+# Меню управления фотографиями
+
+photo_management_keyboard = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [
+            InlineKeyboardButton(
+                text="🟢 Старт",
+                callback_data="admin_photo_path_start"
+            ),
+            InlineKeyboardButton(
+                text="👤 Профиль",
+                callback_data="admin_photo_path_profile"
+            ),
+        ],
+        [
+            InlineKeyboardButton(
+                text="📋 Главное меню",
+                callback_data="admin_photo_path_menu"
+            ),
+        ],
+        [
+            InlineKeyboardButton(
+                text="◀️ Назад",
+                callback_data="admin_menu"
+            )
+        ]
+    ]
+)
+
+
+def get_photo_path_keyboard(path: str) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="🔄 Заменить фото",
+                    callback_data=f"admin_replace_photo_{path}"
+                ),
+                InlineKeyboardButton(
+                    text="🗑 Удалить фото",
+                    callback_data=f"admin_delete_photo_{path}"
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text="◀️ Назад",
+                    callback_data="admin_photos"
+                )
+            ]
+        ]
+    )
 
 
 
