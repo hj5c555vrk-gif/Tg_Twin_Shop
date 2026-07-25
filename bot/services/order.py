@@ -82,7 +82,16 @@ async def create_order_from_cart(
     await session.commit()
     await session.refresh(order)
 
-    return order
+    result = await session.execute(
+        select(Order)
+        .where(Order.id == order.id)
+        .options(
+            selectinload(Order.items).selectinload(OrderItem.product),
+            selectinload(Order.user),
+        )
+    )
+
+    return result.scalar_one_or_none()
 
 
 async def get_order_with_items(

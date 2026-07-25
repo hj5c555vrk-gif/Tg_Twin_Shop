@@ -7,7 +7,7 @@ from aiogram.types import (
     Message,
 )
 
-from bot.database.admin import ADMIN_ID
+from bot.database.admin import ADMIN_ID, is_admin_user
 from bot.database.base import async_session
 from bot.database.models import Order
 from bot.keyboards.admin_key import back_to_admin_keyboard
@@ -25,10 +25,7 @@ from bot.services.order import (
 from bot.states.order_states import OrderStates
 
 order_router = Router()
-
-
-def is_admin(user_id: int) -> bool:
-    return user_id == ADMIN_ID
+is_admin = is_admin_user
 
 
 def format_order_items(order: Order) -> str:
@@ -54,6 +51,31 @@ def format_contact(order: Order) -> str:
         f"ID: {user.telegram_id}\n"
         f"Пользователь: {first_name}\n"
         f"Ссылка: {username}"
+    )
+
+
+def build_admin_order_actions_keyboard(order_id: int) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="✅ Принять заказ",
+                    callback_data=f"order_accept_{order_id}",
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text="❌ Отменить заказ",
+                    callback_data=f"order_reject_{order_id}",
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text="◀️ Назад",
+                    callback_data="admin_orders",
+                )
+            ],
+        ]
     )
 
 
@@ -84,7 +106,7 @@ def build_order_buttons(order: Order) -> InlineKeyboardMarkup:
     buttons.append([
         InlineKeyboardButton(
             text="◀️ Назад",
-            callback_data="admin_menu",
+            callback_data="admin_orders",
         )
     ])
 
@@ -130,14 +152,7 @@ async def checkout_handler(callback: CallbackQuery):
     await callback.bot.send_message(
         ADMIN_ID,
         order_text,
-        reply_markup=InlineKeyboardMarkup(
-            inline_keyboard=[
-                [InlineKeyboardButton(
-                    text="Сменить статус",
-                    callback_data=f"order_status_{order.id}",
-                )]
-            ]
-        ),
+        reply_markup=build_admin_order_actions_keyboard(order.id),
         parse_mode="HTML",
     )
 

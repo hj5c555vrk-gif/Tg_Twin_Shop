@@ -1,7 +1,8 @@
 from aiogram import Router, F
-from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.filters import Command
+from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
-from bot.database.admin import ADMIN_ID
+from bot.database.admin import ADMIN_ID, is_admin_user
 from bot.database.base import async_session
 from bot.keyboards.user_key import profile_keyboard, user_menu_keyboard
 from bot.keyboards.admin_key import admin_keyboard
@@ -11,8 +12,55 @@ from bot.services.user import get_user_profile
 menu_router = Router()
 
 
-def is_admin(user_id: int) -> bool:
-    return user_id == ADMIN_ID
+def get_menu_markup(user_id: int) -> InlineKeyboardMarkup:
+    if is_admin_user(user_id):
+        return admin_keyboard
+    return user_menu_keyboard
+
+
+@menu_router.message(Command("menu"))
+async def cmd_menu(message: Message):
+    await message.answer(
+        "📋 Главное меню\n\nВыберите необходимый раздел.",
+        reply_markup=get_menu_markup(message.from_user.id),
+    )
+
+
+@menu_router.message(Command("cart"))
+async def cmd_cart(message: Message):
+    async with async_session() as session:
+        summary = await get_cart_summary(session, message.from_user.id)
+
+    if not summary["items"]:
+        text = "🛒 Корзина пуста."
+    else:
+        lines = ["<b>🛒 Корзина</b>", ""]
+        for item in summary["items"]:
+            lines.append(
+                f"• {item['name']}\n"
+                f"  Кол-во: {item['quantity']}\n"
+                f"  Сумма: {item['line_total']:.2f} ₽"
+            )
+        lines.append("")
+        lines.append(f"🧾 Итого: {summary['total_price']:.2f} ₽")
+        lines.append(f"📦 Товаров: {summary['quantity_total']}")
+        text = "\n".join(lines)
+
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="🛍 Оформить заказ", callback_data="checkout"),
+            ],
+            [
+                InlineKeyboardButton(text="🧹 Очистить корзину", callback_data="clear_cart"),
+            ],
+            [
+                InlineKeyboardButton(text="◀️ Назад", callback_data="user_menu"),
+            ],
+        ]
+    )
+
+    await message.answer(text, reply_markup=keyboard, parse_mode="HTML")
 
 
 @menu_router.callback_query(F.data == "user_menu")
@@ -20,16 +68,16 @@ async def open_menu(callback: CallbackQuery):
 
     await callback.answer()
 
-    if is_admin(callback.from_user.id):
+    if is_admin_user(callback.from_user.id):
         await callback.message.edit_text(
             "🛠 Главное меню администратора",
-            reply_markup=admin_keyboard
+            reply_markup=get_menu_markup(callback.from_user.id)
         )
     else:
         await callback.message.edit_text(
             "📋 Главное меню\n\n"
             "Выберите необходимый раздел.",
-            reply_markup=user_menu_keyboard
+            reply_markup=get_menu_markup(callback.from_user.id)
         )
 
 

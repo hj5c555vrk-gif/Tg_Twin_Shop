@@ -3,8 +3,9 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
-from bot.keyboards.admin_key import admin_keyboard
 from bot.filters.admin import AdminFilter
+from bot.handlers.menu import get_menu_markup
+from bot.keyboards.admin_key import admin_keyboard
 
 
 common_router = Router()
@@ -22,15 +23,12 @@ async def cancel_handler(
         "✅ Операция отменена."
     )
 
-@common_router.message(
-    Command("menu"),
-    AdminFilter()
-)
-async def admin_menu_handler(message: Message):
+@common_router.message(Command("menu"))
+async def menu_handler(message: Message):
 
     await message.answer(
-        "🛠 Меню администратора",
-        reply_markup=admin_keyboard
+        "📋 Главное меню",
+        reply_markup=get_menu_markup(message.from_user.id)
     )
 
 @common_router.message(

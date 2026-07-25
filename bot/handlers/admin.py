@@ -10,7 +10,7 @@ from aiogram.types import (
 
 from sqlalchemy import select
 
-from bot.database.admin import ADMIN_ID
+from bot.database.admin import is_admin_user
 from bot.database.base import async_session
 from bot.database.models import Category
 from bot.services.user import get_user_logs
@@ -35,10 +35,7 @@ from bot.services.products import (
 from bot.states.admin_states import AddProductStates
 
 admin_router = Router()
-
-
-def is_admin(user_id: int) -> bool:
-    return user_id == ADMIN_ID
+is_admin = is_admin_user
 
 
 # ==========================================================
