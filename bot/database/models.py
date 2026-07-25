@@ -558,3 +558,29 @@ class CategoryView(Base):
         "Category",
         back_populates="views"
     )
+
+
+# ==================================================
+# ФОТОГРАФИИ ДЛЯ СООБЩЕНИЙ
+# ==================================================
+
+class MessagePhoto(Base):
+
+    __tablename__ = "message_photos"
+
+    id = Column(
+        Integer,
+        primary_key=True
+    )
+
+    path = Column(
+        String(100),
+        nullable=False,
+        unique=True,
+        index=True
+    )
+
+    photo_id = Column(
+        String(500),
+        nullable=False
+    )

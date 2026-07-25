@@ -4,6 +4,7 @@ from aiogram.filters import Command
 
 from bot.database.base import async_session
 from bot.services.user import get_or_create_user
+from bot.services.photos import get_message_photo
 from bot.keyboards.user_key import start_keyboard
 
 user_router = Router()
@@ -18,11 +19,15 @@ async def cmd_start(message: Message):
             message.from_user.username,
             message.from_user.first_name,
         )
+        photo = await get_message_photo(session, "start")
 
-    await message.answer(
-        " Сап 🖖 \n"
-        "это гадкий и сладкий twinbot от канала @twinstore_gng!\n\n"
-        "Нажми эту чертову кнопку ниже, чтобы открыть это чертово меню.",
+    await message.answer_photo(
+        photo=photo,
+        caption=(
+            " Сап 🖖 \n"
+            "это гадкий и сладкий twinbot от канала @twinstore_gng!\n\n"
+            "Нажми эту чертову кнопку ниже, чтобы открыть это чертово меню."
+        ),
         reply_markup=start_keyboard,
     )
 
