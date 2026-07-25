@@ -25,3 +25,16 @@ class AddProductStates(StatesGroup):
     edit_price = State()
 
     edit_stock = State()
+
+
+class AddCategoryStates(StatesGroup):
+
+    # Добавление категории
+    name = State()
+
+
+class EditCategoryStates(StatesGroup):
+
+    # Редактирование категории
+    category_id = State()
+    name = State()

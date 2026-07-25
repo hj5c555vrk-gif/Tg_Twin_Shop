@@ -32,7 +32,7 @@ from bot.services.products import (
     update_product_description,
 )
 
-from bot.states.admin_states import AddProductStates
+from bot.states.admin_states import AddProductStates, AddCategoryStates, EditCategoryStates
 
 admin_router = Router()
 is_admin = is_admin_user
@@ -1216,3 +1216,360 @@ async def save_description(
     await message.answer(
         "✅ Описание обновлено"
     )
+
+
+# ==========================================================
+# УПРАВЛЕНИЕ КАТЕГОРИЯМИ
+# ==========================================================
+
+@admin_router.callback_query(F.data == "admin_categories")
+async def admin_categories(callback: CallbackQuery, state: FSMContext):
+
+    if not is_admin(callback.from_user.id):
+        await callback.answer("Нет доступа", show_alert=True)
+        return
+
+    await state.clear()
+    await callback.answer()
+
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="➕ Создать категорию",
+                    callback_data="admin_add_category"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text="✏️ Редактировать категории",
+                    callback_data="admin_edit_categories"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text="🗑 Удалить категории",
+                    callback_data="admin_delete_categories"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text="◀️ Назад",
+                    callback_data="admin_menu"
+                )
+            ]
+        ]
+    )
+
+    await callback.message.edit_text(
+        "<b>📂 Управление категориями</b>\n\n"
+        "Выберите необходимое действие.",
+        parse_mode="HTML",
+        reply_markup=keyboard,
+    )
+
+
+@admin_router.callback_query(F.data == "admin_add_category")
+async def admin_add_category(callback: CallbackQuery, state: FSMContext):
+
+    if not is_admin(callback.from_user.id):
+        await callback.answer("Нет доступа", show_alert=True)
+        return
+
+    await state.clear()
+    await callback.answer()
+
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="◀️ Назад",
+                    callback_data="admin_categories"
+                )
+            ]
+        ]
+    )
+
+    await callback.message.edit_text(
+        "📝 <b>Создание категории</b>\n\n"
+        "Введите название новой категории:",
+        parse_mode="HTML",
+        reply_markup=keyboard,
+    )
+
+    await state.set_state(AddCategoryStates.name)
+
+
+@admin_router.message(AddCategoryStates.name)
+async def admin_save_category(message: Message, state: FSMContext):
+
+    if not is_admin(message.from_user.id):
+        return
+
+    name = message.text.strip()
+    if not name:
+        await message.answer("❌ Название категории не может быть пустым. Попробуйте еще раз:")
+        return
+
+    async with async_session() as session:
+        result = await session.execute(select(Category).where(Category.name == name))
+        existing = result.scalar_one_or_none()
+        if existing:
+            await message.answer("❌ Категория с таким названием уже существует. Введите другое название:")
+            return
+
+        new_cat = Category(name=name)
+        session.add(new_cat)
+        await session.commit()
+
+    await state.clear()
+
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="◀️ Назад",
+                    callback_data="admin_categories"
+                )
+            ]
+        ]
+    )
+    await message.answer(
+        f"✅ Категория <b>{name}</b> успешно создана!",
+        parse_mode="HTML",
+        reply_markup=keyboard
+    )
+
+
+@admin_router.callback_query(F.data == "admin_edit_categories")
+async def admin_edit_categories(callback: CallbackQuery, state: FSMContext):
+
+    if not is_admin(callback.from_user.id):
+        await callback.answer("Нет доступа", show_alert=True)
+        return
+
+    await state.clear()
+    await callback.answer()
+
+    async with async_session() as session:
+        result = await session.execute(select(Category).order_by(Category.name))
+        categories = result.scalars().all()
+
+    if not categories:
+        keyboard = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text="◀️ Назад",
+                        callback_data="admin_categories"
+                    )
+                ]
+            ]
+        )
+        await callback.message.edit_text(
+            "<b>✏️ Редактирование категорий</b>\n\n"
+            "❌ Список категорий пуст.",
+            parse_mode="HTML",
+            reply_markup=keyboard
+        )
+        return
+
+    keyboard_rows = []
+    for cat in categories:
+        keyboard_rows.append([
+            InlineKeyboardButton(
+                text=f"✏️ {cat.name}",
+                callback_data=f"admin_edit_cat_{cat.id}"
+            )
+        ])
+
+    keyboard_rows.append([
+        InlineKeyboardButton(
+            text="◀️ Назад",
+            callback_data="admin_categories"
+        )
+    ])
+
+    await callback.message.edit_text(
+        "<b>✏️ Редактирование категорий</b>\n\n"
+        "Выберите категорию для изменения названия:",
+        parse_mode="HTML",
+        reply_markup=InlineKeyboardMarkup(inline_keyboard=keyboard_rows)
+    )
+
+
+@admin_router.callback_query(F.data.startswith("admin_edit_cat_"))
+async def admin_edit_cat_name(callback: CallbackQuery, state: FSMContext):
+
+    if not is_admin(callback.from_user.id):
+        await callback.answer("Нет доступа", show_alert=True)
+        return
+
+    category_id = int(callback.data.split("_")[3])
+    await state.update_data(category_id=category_id)
+
+    async with async_session() as session:
+        result = await session.execute(select(Category).where(Category.id == category_id))
+        category = result.scalar_one_or_none()
+
+    if not category:
+        await callback.answer("Категория не найдена", show_alert=True)
+        return
+
+    await callback.answer()
+
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="◀️ Назад",
+                    callback_data="admin_edit_categories"
+                )
+            ]
+        ]
+    )
+
+    await callback.message.edit_text(
+        f"📝 <b>Редактирование категории</b>\n\n"
+        f"Текущее название: <b>{category.name}</b>\n"
+        f"Введите новое название для этой категории:",
+        parse_mode="HTML",
+        reply_markup=keyboard
+    )
+
+    await state.set_state(EditCategoryStates.name)
+
+
+@admin_router.message(EditCategoryStates.name)
+async def admin_save_edited_category(message: Message, state: FSMContext):
+
+    if not is_admin(message.from_user.id):
+        return
+
+    new_name = message.text.strip()
+    if not new_name:
+        await message.answer("❌ Название категории не может быть пустым. Попробуйте еще раз:")
+        return
+
+    data = await state.get_data()
+    category_id = data.get("category_id")
+
+    async with async_session() as session:
+        result = await session.execute(
+            select(Category).where(Category.name == new_name, Category.id != category_id)
+        )
+        existing = result.scalar_one_or_none()
+        if existing:
+            await message.answer("❌ Категория с таким названием уже существует. Введите другое название:")
+            return
+
+        result = await session.execute(
+            select(Category).where(Category.id == category_id)
+        )
+        category = result.scalar_one_or_none()
+        if not category:
+            await message.answer("❌ Категория не найдена в базе данных.")
+            await state.clear()
+            return
+
+        category.name = new_name
+        await session.commit()
+
+    await state.clear()
+
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="◀️ Назад",
+                    callback_data="admin_categories"
+                )
+            ]
+        ]
+    )
+    await message.answer(
+        f"✅ Название категории успешно изменено на <b>{new_name}</b>!",
+        parse_mode="HTML",
+        reply_markup=keyboard
+    )
+
+
+@admin_router.callback_query(F.data == "admin_delete_categories")
+async def admin_delete_categories(callback: CallbackQuery, state: FSMContext):
+
+    if not is_admin(callback.from_user.id):
+        await callback.answer("Нет доступа", show_alert=True)
+        return
+
+    await state.clear()
+    await callback.answer()
+
+    async with async_session() as session:
+        result = await session.execute(select(Category).order_by(Category.name))
+        categories = result.scalars().all()
+
+    if not categories:
+        keyboard = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text="◀️ Назад",
+                        callback_data="admin_categories"
+                    )
+                ]
+            ]
+        )
+        await callback.message.edit_text(
+            "<b>🗑 Удаление категорий</b>\n\n"
+            "❌ Список категорий пуст.",
+            parse_mode="HTML",
+            reply_markup=keyboard
+        )
+        return
+
+    keyboard_rows = []
+    for cat in categories:
+        keyboard_rows.append([
+            InlineKeyboardButton(
+                text=f"🗑 {cat.name}",
+                callback_data=f"admin_delete_cat_{cat.id}"
+            )
+        ])
+
+    keyboard_rows.append([
+        InlineKeyboardButton(
+            text="◀️ Назад",
+            callback_data="admin_categories"
+        )
+    ])
+
+    await callback.message.edit_text(
+        "<b>🗑 Удаление категорий</b>\n\n"
+        "⚠️ <b>Внимание:</b> удаление категории повлечет за собой удаление всех связанных товаров!\n\n"
+        "Выберите категорию для удаления:",
+        parse_mode="HTML",
+        reply_markup=InlineKeyboardMarkup(inline_keyboard=keyboard_rows)
+    )
+
+
+@admin_router.callback_query(F.data.startswith("admin_delete_cat_"))
+async def admin_delete_cat_handler(callback: CallbackQuery, state: FSMContext):
+
+    if not is_admin(callback.from_user.id):
+        await callback.answer("Нет доступа", show_alert=True)
+        return
+
+    category_id = int(callback.data.split("_")[3])
+
+    async with async_session() as session:
+        result = await session.execute(select(Category).where(Category.id == category_id))
+        category = result.scalar_one_or_none()
+
+        if category:
+            await session.delete(category)
+            await session.commit()
+            await callback.answer("Категория удалена")
+        else:
+            await callback.answer("Категория не найдена", show_alert=True)
+
+    await admin_delete_categories(callback, state)

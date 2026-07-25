@@ -11,12 +11,9 @@ CATEGORIES = [
 
 
 async def seed_categories(session):
-    for name in CATEGORIES:
-        result = await session.execute(
-            select(Category).where(Category.name == name)
-        )
-
-        if result.scalar() is None:
+    # Check if we have any categories in the database
+    result = await session.execute(select(Category))
+    if not result.scalars().first():
+        for name in CATEGORIES:
             session.add(Category(name=name))
-
-    await session.commit()
+        await session.commit()
