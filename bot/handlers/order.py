@@ -274,7 +274,7 @@ async def order_reject(callback: CallbackQuery, state: FSMContext):
 async def reject_reason(message: Message, state: FSMContext):
     data = await state.get_data()
     order_id = data.get("order_id")
-    reason = message.text.strip()
+    reason = (message.text or "").strip() or "Причина не указана."
 
     async with async_session() as session:
         order = await update_order_status(

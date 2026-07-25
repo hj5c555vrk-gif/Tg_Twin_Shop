@@ -2,6 +2,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from bot.database.models import Category, Order, User, UserCategoryClick
+from bot.services.order import count_completed_orders
 
 
 async def get_or_create_user(
@@ -89,10 +90,7 @@ async def get_user_profile(session: AsyncSession, telegram_id: int):
             "favorite_categories": ["Пока нет данных"],
         }
 
-    order_count_result = await session.execute(
-        select(func.count(Order.id)).where(Order.user_id == user.id)
-    )
-    order_count = order_count_result.scalar() or 0
+    order_count = await count_completed_orders(session, telegram_id)
 
     favorite_categories_result = await session.execute(
         select(Category.name)

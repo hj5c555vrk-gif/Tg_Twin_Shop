@@ -5,6 +5,9 @@ from bot.database.models import (
     Product,
 )
 
+DEFAULT_PRODUCTS = []
+
+
 async def seed_products(session):
     product_items = globals().get("PRODUCTS", DEFAULT_PRODUCTS)
 

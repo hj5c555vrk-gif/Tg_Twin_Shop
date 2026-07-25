@@ -48,6 +48,20 @@ class UserProfileTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(profile["order_count"], 1)
             self.assertEqual(profile["favorite_categories"], ["🧃 Жидкости", "⚙️ Испарители"])
 
+    async def test_profile_does_not_count_rejected_orders(self):
+        async with self.session_factory() as session:
+            user = await get_or_create_user(session, 203, "rejected_user", "Rejected")
+
+            session.add_all([
+                Order(user_id=user.id, status="completed", total_price="1.00"),
+                Order(user_id=user.id, status="rejected", total_price="2.00"),
+            ])
+            await session.commit()
+
+            profile = await get_user_profile(session, user.telegram_id)
+
+            self.assertEqual(profile["order_count"], 1)
+
 
 if __name__ == "__main__":
     unittest.main()
