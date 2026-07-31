@@ -99,7 +99,7 @@ def product_keyboard(
 
                 InlineKeyboardButton(
 
-                    text="🛒 Добавить в корзину",
+                    text="🥅 Добавить в Ворота",
 
                     callback_data=f"add_cart_{product_id}"
 
