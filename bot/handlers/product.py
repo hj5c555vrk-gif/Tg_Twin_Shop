@@ -43,7 +43,7 @@ async def show_product(callback: CallbackQuery):
 
     await callback.message.edit_text(
     text,
-    reply_markup=product_keyboard(product.id),
+    reply_markup=product_keyboard(product.id, product.category_id),
     parse_mode="HTML"
     )
 

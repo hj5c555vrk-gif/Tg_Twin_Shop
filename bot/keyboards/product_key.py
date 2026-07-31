@@ -86,7 +86,8 @@ def products_keyboard(products):
 # ==================================================
 
 def product_keyboard(
-    product_id: int
+    product_id: int,
+    category_id: int
 ):
 
 
@@ -114,7 +115,7 @@ def product_keyboard(
 
                     text="⬅️ Назад к товарам",
 
-                    callback_data="back_products"
+                    callback_data=f"category_{category_id}"
 
                 )
 
