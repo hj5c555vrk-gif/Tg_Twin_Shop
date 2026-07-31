@@ -44,7 +44,7 @@ def products_keyboard(products):
 
                         text=(
                             f"{product.name} "
-                            f"({product.price} ₽)"
+                            f"({product.price} Don$han)"
                         ),
 
                         callback_data=f"product_{product.id}"
