@@ -62,4 +62,4 @@ async def add_to_cart(callback: CallbackQuery):
             quantity=1,
         )
 
-    await callback.answer("Товар добавлен в корзину")
+    await callback.answer("Гол летит в ворота")
