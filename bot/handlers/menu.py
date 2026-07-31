@@ -148,7 +148,7 @@ async def show_cart(callback: CallbackQuery):
     if not summary["items"]:
         text = "🛒 Корзина пуста."
     else:
-        lines = ["<b>🛒 Корзина</b>", ""]
+        lines = ["<b> 🥅 Ворота </b>", ""]
         for item in summary["items"]:
             lines.append(
                 f"• {item['name']}\n"
@@ -163,10 +163,10 @@ async def show_cart(callback: CallbackQuery):
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [
-                InlineKeyboardButton(text="🛍 Оформить заказ", callback_data="checkout"),
+                InlineKeyboardButton(text="🛍 Забить гол", callback_data="checkout"),
             ],
             [
-                InlineKeyboardButton(text="🧹 Очистить корзину", callback_data="clear_cart"),
+                InlineKeyboardButton(text="🧹Не забивать Гол ", callback_data="clear_cart"),
             ],
             [
                 InlineKeyboardButton(text="◀️ Назад", callback_data="user_menu"),
