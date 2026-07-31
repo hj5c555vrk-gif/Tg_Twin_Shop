@@ -146,7 +146,7 @@ async def show_cart(callback: CallbackQuery):
         summary = await get_cart_summary(session, callback.from_user.id)
 
     if not summary["items"]:
-        text = "🛒 Ворота пустые."
+        text = "🥅 Ворота пустые."
     else:
         lines = ["<b> 🥅 Ворота </b>", ""]
         for item in summary["items"]:
