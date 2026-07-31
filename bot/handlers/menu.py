@@ -25,7 +25,7 @@ async def cmd_menu(message: Message):
         photo = await get_message_photo(session, "menu")
     await message.answer_photo(
         photo=photo,
-        caption="📋 Главное меню\n\nВыберите необходимый раздел.",
+        caption=Главнейшее меню\n\nВыбери нужный тебе раздел.",
         reply_markup=get_menu_markup(message.from_user.id),
     )
 
