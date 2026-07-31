@@ -126,7 +126,7 @@ async def checkout_handler(callback: CallbackQuery):
 
     user_chat = callback.from_user
     text = (
-        "🛍 Заказ оформлен. С вами свяжется менеджер.\n\n"
+        "🛍 Гол забит. С вами свяжется менеджер.\n\n"
         "📌 Статус: отправлен"
     )
 
@@ -331,5 +331,5 @@ async def order_complete(callback: CallbackQuery):
 
     await callback.bot.send_message(
         order.user.telegram_id,
-        "Ваш заказ выполнен. Спасибо, что выбрали нас!",
+        "Ваш Гол подтверждён. Спасибо, что выбрали нас!",
     )
