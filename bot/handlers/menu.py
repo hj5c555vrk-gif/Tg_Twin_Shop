@@ -36,9 +36,9 @@ async def cmd_cart(message: Message):
         summary = await get_cart_summary(session, message.from_user.id)
 
     if not summary["items"]:
-        text = "🛒 Корзина пуста."
+        text = " 🥅 Ворота пустые ."
     else:
-        lines = ["<b>🛒 Корзина</b>", ""]
+        lines = ["<b> 🥅 Ворота </b>", ""]
         for item in summary["items"]:
             lines.append(
                 f"• {item['name']}\n"
@@ -53,10 +53,10 @@ async def cmd_cart(message: Message):
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [
-                InlineKeyboardButton(text="🛍 Оформить заказ", callback_data="checkout"),
+                InlineKeyboardButton(text="🛍 Забить Гол", callback_data="checkout"),
             ],
             [
-                InlineKeyboardButton(text="🧹 Очистить корзину", callback_data="clear_cart"),
+                InlineKeyboardButton(text="⛔️ Не забивать гол ", callback_data="clear_cart"),
             ],
             [
                 InlineKeyboardButton(text="◀️ Назад", callback_data="user_menu"),
