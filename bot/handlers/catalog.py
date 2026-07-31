@@ -183,7 +183,7 @@ async def open_category(
         return
 
     await callback.message.edit_text(
-        "📦 Выберите товар:",
+        " 🧑🏻‍🍳 Выбери этот гадкий сладкий товар:",
         reply_markup=products_keyboard(products)
     )
 
