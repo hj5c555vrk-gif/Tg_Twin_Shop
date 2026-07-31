@@ -37,7 +37,7 @@ async def show_product(callback: CallbackQuery):
     text = (
         f"<b>{product.name}</b>\n\n"
         f"{product.description}\n\n"
-        f"💰 Цена: {product.price} ₽"
+        f" 💸 Ценность: {product.price} Донжуанов"
     )
 
 
