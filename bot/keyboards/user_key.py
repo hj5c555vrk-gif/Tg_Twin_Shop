@@ -29,7 +29,7 @@ user_menu_keyboard = InlineKeyboardMarkup(
 
         [
             InlineKeyboardButton(
-                text="🛒 Корзина",
+                text="🥅 Ворота",
                 callback_data="cart"
             )
         ],
