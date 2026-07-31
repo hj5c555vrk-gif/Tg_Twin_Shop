@@ -46,8 +46,8 @@ async def open_catalog(target):
         return
 
     text = (
-        "<b>📦 Каталог товаров</b>\n\n"
-        "Выберите категорию:"
+        "<b>Категорий этих Гадких товаров</b>\n\n"
+        "🥵 А ты попробуй и выбери категорию:"
     )
 
     keyboard = catalog_keyboard(categories)
